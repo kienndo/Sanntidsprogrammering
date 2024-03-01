@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/kienninhdo/Sanntidsprogrammering'
+make: Leaving directory `/Users/kienninhdo/Sanntidsprogrammering'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+
