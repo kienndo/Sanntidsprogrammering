@@ -1,5 +1,5 @@
-module Driver-go
+module Sanntidsprogrammering
 
 go 1.16
 
-replace Driver-go => ./Driver-go
+replace Sanntidsprogrammering => ./Sanntidsprogrammering

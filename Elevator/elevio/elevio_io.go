@@ -7,16 +7,50 @@ import (
 	"time"
 )
 
-const _pollRate = 20 * time.Millisecond
+// Constants for the number of floors and buttons
+const (
+	N_FLOORS	= 4
+	N_BUTTONS	= 3
+	_pollRate = 20 * time.Millisecond
+)
 
+// Different used variables
 var _initialized bool = false
 var _numFloors int = 4
 var _mtx sync.Mutex
 var _conn net.Conn
 
+// Struct for the elevator
+type Elevator struct {
+	Floor int // Which floor
+	Dirn MotorDirection // Which direction the elevator is going in
+	Behaviour ElevatorBehaviour // Which state the elevator is in
+	Request [N_FLOORS][N_BUTTONS]int // Which request the elevator has
+	Config Config // Configuration of the elevator
+}
+
+// Struct for the configuration of the elevator
+type Config struct {
+	ClearRequestVariant ClearRequestVariant // I think the other code defines how it is initialized
+	DoorOpenDuration float64 // How long the door is open
+}
+
+//If I got this right, this is supposed to define how the requests are cleared
+type ClearRequestVariant int
+const (
+	CV_All ClearRequestVariant = 0 //If i have not understood this wrong, this is the variant for clearing all requests
+	CV_InDirn = 1 // A little bit confused here
+)
+
+// A struct with a pair for which way the elevator is going and what kind of state it is in
+type DirnBehaviourPair struct {
+	Dirn MotorDirection
+	Behaviour ElevatorBehaviour
+}
+
+
 // Enum for the direction of the elevator
 type MotorDirection int
-
 const (
 	MD_Up   MotorDirection = 1
 	MD_Down                = -1
@@ -25,11 +59,18 @@ const (
 
 // Enum for the different types of buttons
 type ButtonType int
-
 const (
 	BT_HallUp   ButtonType = 0
 	BT_HallDown            = 1
 	BT_Cab                 = 2
+)
+
+//enum for states for the FSM
+type ElevatorBehaviour int
+const (
+	EB_Idle     ElevatorBehaviour = 0
+	EB_DoorOpen                   = 1
+	EB_Moving                     = 2
 )
 
 // Struct for the different types of button events including floor and button
@@ -211,4 +252,44 @@ func toBool(a byte) bool {
 		b = true
 	}
 	return b
+}
+
+func ebToString(eb ElevatorBehaviour) string {
+	switch eb {
+	case EB_Idle:
+		return "EB_Idle"
+	case EB_DoorOpen:
+		return "EB_DoorOpen"
+	case EB_Moving:
+		return "EB_Moving"
+	default:
+		return "EB_UNDEFINED"
+	}
+}
+
+//Functions for converting the different enums to strings
+func ElevioDirnToString(d MotorDirection) string {
+	switch d {
+	case MD_Up:
+		return "D_Up"
+	case MD_Down:
+		return "D_Down"
+	case MD_Stop:
+		return "D_Stop"
+	default:
+		return "D_UNDEFINED"
+	}
+}
+
+func ElevioButtonToString(b ButtonType) string {
+	switch b {
+	case BT_HallUp:
+		return "B_HallUp"
+	case BT_HallDown:
+		return "B_HallDown"
+	case BT_Cab:
+		return "B_Cab"
+	default:
+		return "B_UNDEFINED"
+	}
 }

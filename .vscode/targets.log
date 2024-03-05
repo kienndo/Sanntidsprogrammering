@@ -6,11 +6,8 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # PARTICULAR PURPOSE.
 
 # This program built for i386-apple-darwin11.3.0
- 
-make: *** No rule to make target `all'.  Stop.
 
-
-# Make data base, printed on Fri Mar  1 15:02:46 2024
+# Make data base, printed on Tue Mar  5 18:39:56 2024
 
 # Variables
 
@@ -37,21 +34,27 @@ _ = /usr/bin/make
 # makefile
 MAKEFILE_LIST := 
 # environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
 VSCODE_CWD = /
 # environment
-PATH = /Users/kienninhdo/opt/anaconda3/bin:/Users/kienninhdo/opt/anaconda3/condabin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/usr/local/go/bin
+GOPROXY = https://proxy.golang.org,direct
+# environment
+PATH = /usr/local/go/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+# environment
+GOPATH = /Users/kienninhdo/go
+# environment
+LaunchInstanceID = 4A083B40-A44A-4806-884D-998168367BB9
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.mCkhuUbEQN/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.NSv5BT4VV0/Listeners
 # automatic
 %F = $(notdir $%)
-# environment
-CONDA_EXE = /Users/kienninhdo/opt/anaconda3/bin/conda
 # environment
 PWD = /Users/kienninhdo/Sanntidsprogrammering
 # environment
@@ -59,7 +62,7 @@ ORIGINAL_XDG_CURRENT_DESKTOP = undefined
 # environment
 MANPATH = /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/share/man:/Library/Developer/CommandLineTools/usr/share/man:/Library/Developer/CommandLineTools/Toolchains/XcodeDefault.xctoolchain/usr/share/man:
 # environment
-VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+GOMODCACHE = /Users/kienninhdo/go/pkg/mod
 # environment
 HOME = /Users/kienninhdo
 # default
@@ -71,13 +74,9 @@ LOGNAME = kienninhdo
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
-CONDA_PROMPT_MODIFIER = (base) 
-# environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
-# environment
-CONDA_DEFAULT_ENV = base
 # environment
 XPC_FLAGS = 0x0
 # default
@@ -94,8 +93,6 @@ USER = kienninhdo
 .DEFAULT_GOAL := 
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
-# environment
-CONDA_SHLVL = 1
 # default
 MAKE_COMMAND := /Library/Developer/CommandLineTools/usr/bin/make
 # default
@@ -118,8 +115,6 @@ MFLAGS = -Rrqp
 XPC_SERVICE_NAME = application.com.microsoft.VSCode.45608836.45608842
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
-# environment
-VSCODE_L10N_BUNDLE_LOCATION = 
 # automatic
 +F = $(notdir $+)
 # environment
@@ -133,7 +128,7 @@ MAKEFILES :=
 # environment
 LC_ALL = C
 # environment
-CONDA_PYTHON_EXE = /Users/kienninhdo/opt/anaconda3/bin/python
+SECURITYSESSIONID = 186a2
 # automatic
 ^F = $(notdir $^)
 # default
@@ -143,14 +138,11 @@ SUFFIXES :=
 # environment
 MAKELEVEL := 0
 # environment
-CONDA_PREFIX = /Users/kienninhdo/opt/anaconda3
- 
-# environment
-VSCODE_PID = 6593
-# environment
 LANG = C
+# environment
+VSCODE_PID = 477
 # variable set hash-table stats:
-# Load=67/1024=7%, Rehash=0, Collisions=2/88=2%
+# Load=65/1024=6%, Rehash=0, Collisions=2/86=2%
 
 # Pattern-specific Variable Values
 
@@ -158,9 +150,9 @@ LANG = C
 
 # Directories
 
-# . (device 16777221, inode 47321976): 11 files, no impossibilities.
+# . (device 16777220, inode 47321976): 8 files, no impossibilities.
 
-# 11 files, no impossibilities in 1 directories.
+# 8 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -232,6 +224,8 @@ GNUmakefile:
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Fri Mar  1 15:02:46 2024
+# Finished Make data base on Tue Mar  5 18:39:56 2024
 
  
+make: *** No rule to make target `all'.  Stop.
+
