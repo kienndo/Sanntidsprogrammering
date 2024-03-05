@@ -129,4 +129,3 @@ func ShouldStop(e elevio.Elevator) bool {
 		return true
 	}
 }
-

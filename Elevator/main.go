@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Sanntidsprogrammering/elevio"
+	"Sanntidsprogrammering/Elevator/elevio"
 	"fmt"
 )
 

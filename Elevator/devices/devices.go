@@ -1,7 +1,7 @@
 package devices
 
 import (
-	elevio "Sanntidsprogrammering/elevio" //Import is fucked up here, but fix at the lab
+	elevio "Sanntidsprogrammering/Elevator/elevio" 
 )
 
 /*Creating structs for if the elevator is an input device og an output device. If it is a input device, 
