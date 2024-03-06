@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"time"
 )
-var(
+
+var (
 	input devices.ElevInputDevice
 )
 
@@ -27,18 +28,18 @@ func main() {
 	//drv_stop := make(chan bool)
 
 	input := devices.Elevio_GetInputDevice()
-    
-	if(input.FloorSensor() == -1){
-		fsm.FsmOnInitBetweenFloors();
+
+	if input.FloorSensor() == -1 {
+		fsm.FsmOnInitBetweenFloors()
 	}
 	// Request button
 	var prevFloor = make([][]bool, elevio.N_FLOORS)
-	for i:= 0; i < elevio.N_FLOORS; i++ {
+	for i := 0; i < elevio.N_FLOORS; i++ {
 		prevFloor[i] = make([]bool, elevio.N_BUTTONS)
 	}
-	
+
 	var previous int = -1
-	
+
 	for {
 
 		for f := 0; f < elevio.N_FLOORS; f++ {
@@ -52,22 +53,20 @@ func main() {
 		}
 
 		{
-		// Floor sensor
-		
-		g := input.FloorSensor()
-		if g != -1 && g != previous {
-			fsm.FsmOnFloorArrival(g)
-		}
-		previous = g
-		fmt.Printf("(%d)",timer.TimerActive)
-		
-		if timer.TimerTimedOut() {
-			timer.TimerStop()
-			fsm.FsmOnDoorTimeout()	
-		}
-	}
+			// Floor sensor
 
+			g := input.FloorSensor()
+			if g != -1 && g != previous {
+				fsm.FsmOnFloorArrival(g)
+			}
+			previous = g
+			fmt.Printf("(%d)", timer.TimerActive)
 
+			if timer.TimerTimedOut() {
+				timer.TimerStop()
+				fsm.FsmOnDoorTimeout()
+			}
+		}
 		time.Sleep(time.Duration(250) * time.Millisecond)
 	}
 }
