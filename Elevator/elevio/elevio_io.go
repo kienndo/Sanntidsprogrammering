@@ -254,7 +254,7 @@ func toBool(a byte) bool {
 	return b
 }
 
-func ebToString(eb ElevatorBehaviour) string {
+func EbToString(eb ElevatorBehaviour) string {
 	switch eb {
 	case EB_Idle:
 		return "EB_Idle"

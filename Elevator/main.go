@@ -5,6 +5,7 @@ import (
 	"Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	timer "Sanntidsprogrammering/Elevator/timer"
+	"fmt"
 	"time"
 )
 var(
@@ -30,10 +31,16 @@ func main() {
 	if(input.FloorSensor() == -1){
 		fsm.FsmOnInitBetweenFloors();
 	}
-
+	// Request button
+	var prevFloor = make([][]bool, elevio.N_FLOORS)
+	for i:= 0; i < elevio.N_FLOORS; i++ {
+		prevFloor[i] = make([]bool, elevio.N_BUTTONS)
+	}
+	
+	var previous int = -1
+	
 	for {
-		// Request button
-		var prevFloor [elevio.N_FLOORS][elevio.N_BUTTONS] int
+
 		for f := 0; f < elevio.N_FLOORS; f++ {
 			for b := 0; b < elevio.N_BUTTONS; b++ {
 				v := input.RequestButton(elevio.ButtonType(b), f)
@@ -43,20 +50,25 @@ func main() {
 				prevFloor[f][b] = v
 			}
 		}
-		// Floor sensor
-		var prevFloor int = -1
-		f := input.FloorSensor()
-		if f != -1 && f != prevFloor {
-			fsm.FsmOnFloorArrival(f)
-		}
-		prevFloor = f
 
-		// Timer
+		{
+		// Floor sensor
+		
+		g := input.FloorSensor()
+		if g != -1 && g != previous {
+			fsm.FsmOnFloorArrival(g)
+		}
+		previous = g
+		fmt.Printf("(%d)",timer.TimerActive)
+		
 		if timer.TimerTimedOut() {
+			
 			timer.TimerStop()
 			fsm.FsmOnDoorTimeout()
 		}
+	}
 
-		time.Sleep(time.Duration(25) * time.Millisecond)
+
+		time.Sleep(time.Duration(250) * time.Millisecond)
 	}
 }

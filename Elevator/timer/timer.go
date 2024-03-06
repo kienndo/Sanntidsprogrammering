@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	timerEndTime float64
-	timerActive  int
+	TimerEndTime float64
+	TimerActive  int
 )
 
 type Timeval struct {
@@ -15,21 +15,21 @@ type Timeval struct {
 }
 
 func getWallTime() float64 {
-	var wallTime float64
-	currentTime := Timeval{Sec: time.Now().Unix(), Usec: int64(time.Now().UnixNano() / 1000)}
-	wallTime = float64(currentTime.Sec) + float64(currentTime.Usec)*0.000001
-	return wallTime
+	var WallTime float64
+	CurrentTime := Timeval{Sec: time.Now().Unix(), Usec: int64(time.Now().UnixNano() / 1000)}
+	WallTime = float64(CurrentTime.Sec) + float64(CurrentTime.Usec)*0.000001
+	return WallTime
 }
 
 func TimerStart(duration float64) {
-	timerEndTime = getWallTime() + duration
-	timerActive = 1
+	TimerEndTime = getWallTime() + duration
+	TimerActive = 1
 }
 
 func TimerStop() {
-	timerActive = 0
+	TimerActive = 0
 }
 
 func TimerTimedOut() bool {
-	return float64(timerActive) != 0 && getWallTime() > timerEndTime
+	return float64(TimerActive) != 0 && getWallTime() > TimerEndTime
 }

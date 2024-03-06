@@ -5,7 +5,7 @@ import (
 )
 
 
-// This function
+
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) bool {
 	switch e.Config.ClearRequestVariant {
 	case elevio.CV_All:
