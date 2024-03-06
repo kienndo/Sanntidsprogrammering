@@ -35,11 +35,11 @@ type Config struct {
 	DoorOpenDuration float64 // How long the door is open
 }
 
-//If I got this right, this is supposed to define how the requests are cleared
+//clear-funksjon på om alt skal fjernes eller bare noe
 type ClearRequestVariant int
 const (
 	CV_All ClearRequestVariant = 0 //If i have not understood this wrong, this is the variant for clearing all requests
-	CV_InDirn = 1 // A little bit confused here
+	CV_InDirn = 1 // Only clearing in one direction
 )
 
 // A struct with a pair for which way the elevator is going and what kind of state it is in
