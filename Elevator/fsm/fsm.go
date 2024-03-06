@@ -11,6 +11,7 @@ import (
 var (
 	elevator     elevio.Elevator
 	outputDevice devices.ElevOutputDevice
+	pair		 elevio.DirnBehaviourPair
 )
 
 // Initialize the elevator with FSM
@@ -59,7 +60,7 @@ func FsmOnRequestButtonPress(btn_floor int, btn_type elevio.ButtonType) {
 	case elevio.EB_Idle:
 
 		elevator.Request[btn_floor][btn_type] = 1
-		pair := requests.ChooseDirection(elevator)
+		pair = requests.ChooseDirection(elevator)
 		elevator.Dirn = pair.Dirn
 		elevator.Behaviour = pair.Behaviour
 		switch pair.Behaviour {
@@ -105,7 +106,7 @@ func FsmOnFloorArrival(newFloor int) {
 }
 
 func FsmOnDoorTimeout() {
-	fmt.Printf("\n\nFsmOnDoorTimeout(%d, %s)\n")
+	fmt.Printf("\n\nFsmOnDoorTimeout\n")
 	fmt.Printf("slayer")
 
 	switch elevator.Behaviour {

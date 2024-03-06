@@ -62,9 +62,8 @@ func main() {
 		fmt.Printf("(%d)",timer.TimerActive)
 		
 		if timer.TimerTimedOut() {
-			
 			timer.TimerStop()
-			fsm.FsmOnDoorTimeout()
+			fsm.FsmOnDoorTimeout()	
 		}
 	}
 
