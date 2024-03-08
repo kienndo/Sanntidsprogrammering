@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	"fmt"
@@ -12,7 +11,7 @@ func main() {
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
-	
+
 	go fsm.CheckForTimeout()
 
 	drv_buttons := make(chan elevio.ButtonEvent)
@@ -29,10 +28,10 @@ func main() {
 		fsm.FsmOnInitBetweenFloors()
 	}
 
-	fsm.InitLights() 
+	fsm.InitLights()
 
 	for {
-		
+
 		select {
 		case a := <-drv_buttons:
 			// Button signal
