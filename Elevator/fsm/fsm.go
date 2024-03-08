@@ -59,7 +59,7 @@ func FsmOnRequestButtonPress(btn_floor int, btn_type elevio.ButtonType) {
 
 	switch elevator.Behaviour {
 	case elevio.EB_DoorOpen:
-		if requests.ShouldClearImmediately(elevator, btn_floor, btn_type) == 1 {
+		if requests.ShouldClearImmediately(elevator, btn_floor, btn_type) != 0 {
 			timer.TimerStart(elevator.Config.DoorOpenDuration)
 		} else {
 			elevator.Request[btn_floor][btn_type] = 1
@@ -70,16 +70,16 @@ func FsmOnRequestButtonPress(btn_floor int, btn_type elevio.ButtonType) {
 	case elevio.EB_Idle:
 
 		elevator.Request[btn_floor][btn_type] = 1
-		pair = requests.ChooseDirection(elevator)
+		var pair elevio.DirnBehaviourPair = requests.ChooseDirection(elevator)
 		elevator.Dirn = pair.Dirn
 		elevator.Behaviour = pair.Behaviour
 		switch pair.Behaviour {
 		case elevio.EB_DoorOpen:
-			outputDevice.DoorLight(true)
+			elevio.SetDoorOpenLamp(true)
 			timer.TimerStart(elevator.Config.DoorOpenDuration)
 			elevator = requests.ClearAtCurrentFloor(elevator)
 		case elevio.EB_Moving:
-			outputDevice.MotorDirection(elevio.MotorDirection(elevator.Dirn))
+			elevio.SetMotorDirection(elevator.Dirn)
 		case elevio.EB_Idle:
 			break
 		}
@@ -96,21 +96,22 @@ func FsmOnFloorArrival(newFloor int) {
 
 	elevator.Floor = newFloor
 
-	outputDevice.FloorIndicator(elevator.Floor)
+	elevio.SetFloorIndicator(elevator.Floor)
 
 	switch elevator.Behaviour {
 	case elevio.EB_Moving:
-		if requests.ShouldStop(elevator) == 1 {
+		if requests.ShouldStop(elevator) != 0 {
 			
-			outputDevice.MotorDirection(elevio.MotorDirection(elevio.MD_Stop))
-			outputDevice.DoorLight(true)
+			elevio.SetMotorDirection(elevio.MotorDirection(elevio.MD_Stop))
+			elevio.SetDoorOpenLamp(true)
 			elevator := requests.ClearAtCurrentFloor(elevator)
 			timer.TimerStart(elevator.Config.DoorOpenDuration)
-			SetAllLights(elevator)
+			SetAllLights(elevator) //CAB LIGHTS?
 			elevator.Behaviour = elevio.EB_DoorOpen
 			
 		}
-		break;
+	default:
+		break
 	}
 	var state string = elevio.EbToString(elevator.Behaviour)
 	fmt.Println("\nNew state after arrival: ", state)
@@ -121,32 +122,27 @@ func FsmOnDoorTimeout() {
 
 	switch elevator.Behaviour {
 	case elevio.EB_DoorOpen:
-		pair := requests.ChooseDirection(elevator)
+		var pair elevio.DirnBehaviourPair = requests.ChooseDirection(elevator)
 		elevator.Dirn = pair.Dirn
-		elevator.Behaviour = elevio.EB_Idle
+		elevator.Behaviour = pair.Behaviour
 
 		switch elevator.Behaviour {
 		case elevio.EB_DoorOpen:
 			timer.TimerStart(elevator.Config.DoorOpenDuration)
 			elevator = requests.ClearAtCurrentFloor(elevator)
-			SetAllLights(elevator)
-			elevator.Behaviour = elevio.EB_Idle
-			break;
-
+			SetAllLights(elevator) // CAB???
+			//elevator.Behaviour = elevio.EB_Idle
 		case elevio.EB_Moving:
-			elevator.Behaviour = elevio.EB_Idle
-			//do nothing
+			elevio.SetDoorOpenLamp(false)
+			elevio.SetMotorDirection(elevator.Dirn)
 
 		case elevio.EB_Idle:
-			outputDevice.DoorLight(false)
-			outputDevice.MotorDirection(elevio.MotorDirection(elevator.Dirn))
-			elevator.Behaviour = elevio.EB_Idle
-			break;
+			elevio.SetDoorOpenLamp(false)
+			elevio.SetMotorDirection(elevator.Dirn)
 		}
-		break;
 	default:
-		elevator.Behaviour = elevio.EB_Idle
-		break;
+		//elevator.Behaviour = elevio.EB_Idle
+		break
 	}
 
 	fmt.Println("\nNew state after Timeout: ", elevio.EbToString(elevator.Behaviour))

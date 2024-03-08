@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Sanntidsprogrammering/Elevator/devices"
-	"Sanntidsprogrammering/Elevator/elevio"
+	//"Sanntidsprogrammering/Elevator/devices"
+	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	timer "Sanntidsprogrammering/Elevator/timer"
 	//"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	input devices.ElevInputDevice
+	//input devices.ElevInputDevice
 )
 
 func main() {
@@ -19,17 +19,21 @@ func main() {
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
-	//fsm.FSM_init()
+	
 
-	// Channels for all the different inputs
-	//drv_buttons := make(chan elevio.ButtonEvent)
-	//drv_floors := make(chan int)
-	//drv_obstr := make(chan bool)
-	//drv_stop := make(chan bool)
+	drv_buttons := make(chan elevio.ButtonEvent)
+	drv_floors := make(chan int)
+	drv_obstr := make(chan bool)
+	drv_stop := make(chan bool)
 
-	input := devices.Elevio_GetInputDevice()
+	go elevio.PollButtons(drv_buttons)
+	go elevio.PollFloorSensor(drv_floors)
+	go elevio.PollObstructionSwitch(drv_obstr)
+	go elevio.PollStopButton(drv_stop)
 
-	if input.FloorSensor() == -1 {
+	
+
+	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
 	// Request button
@@ -42,9 +46,11 @@ func main() {
 
 	for {
 
+		
+
 		for f := 0; f < elevio.N_FLOORS; f++ {
 			for b := 0; b < elevio.N_BUTTONS; b++ {
-				v := input.RequestButton(elevio.ButtonType(b), f)
+				v := elevio.GetButton(elevio.ButtonType(b), f)
 				if v != false && prevFloor[f][b] != v {
 					fsm.FsmOnRequestButtonPress(f, elevio.ButtonType(b))
 				}
@@ -55,7 +61,7 @@ func main() {
 		{
 			// Floor sensor
 
-			g := input.FloorSensor()
+			g := elevio.GetFloor()
 			if g != -1 && g != previous {
 				fsm.FsmOnFloorArrival(g)
 			}
