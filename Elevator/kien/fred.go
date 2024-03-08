@@ -92,7 +92,9 @@ initialization:
 			case elevio.EB_DoorOpen:
 			case elevio.EB_Moving:
 			case elevio.EB_Idle:
-				e.Dirn, e.Behaviour = requests.ChooseDirection(e)
+				var tempDirnBehav elevio.DirnBehaviourPair = requests.ChooseDirection(e)
+				e.Dirn = tempDirnBehav.Dirn
+				e.Behaviour = tempDirnBehav.Behaviour
 				elevDataTimer.Reset(1)
 
 				switch e.Behaviour {
@@ -138,7 +140,7 @@ initialization:
 					elevio.SetDoorOpenLamp(true)
 					e.Behaviour = elevio.EB_DoorOpen
 					if !obstr {
-						doorOpenTimer.Reset(e.doorOpenDuration)
+						doorOpenTimer.Reset(time.Duration(e.Config.DoorOpenDuration))
 					}
 				}
 			}
@@ -149,7 +151,7 @@ initialization:
 			case elevio.EB_DoorOpen:
 				e.CabRequests[e.Floor] = false
 				elevio.SetButtonLamp(elevio.BT_Cab, e.Floor, false)
-				executedHallOrder = requests.GetExecutedHallOrder(e) //ikke implementert
+				executedHallOrder = requests.GetExecutedHallOrder(e) 
 				e.HallRequests[executedHallOrder.Floor][executedHallOrder.Button] = false
 				executedHallOrderTimer.Reset(1)
 				var tempDirnBehav elevio.DirnBehaviourPair = requests.ChooseDirection(e)
@@ -158,7 +160,7 @@ initialization:
 				elevDataTimer.Reset(1)
 				switch e.Behaviour {
 				case elevio.EB_DoorOpen:
-					doorOpenTimer.Reset(e.doorOpenDuration)
+					doorOpenTimer.Reset(time.Duration(e.Config.DoorOpenDuration))
 				case elevio.EB_Moving, elevio.EB_Idle:
 					elevio.SetDoorOpenLamp(false)
 					elevio.SetMotorDirection(e.Dirn)
@@ -173,7 +175,7 @@ initialization:
 			case elevio.EB_Moving:
 			case elevio.EB_DoorOpen:
 				if !obstr {
-					doorOpenTimer.Reset(e.DoorOpenDuration)
+					doorOpenTimer.Reset(time.Duration(e.Config.DoorOpenDuration))
 				}
 			}
 		case <-elevDataTimer.C:

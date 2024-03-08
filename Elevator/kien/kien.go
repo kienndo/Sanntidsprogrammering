@@ -7,8 +7,6 @@ import (
 	"Sanntidsprogrammering/Elevator/requests"
 	"time"
 )
-//prank bro xD
-
 
 // gitt i main:
 //numFloors := 4
@@ -98,8 +96,15 @@ func StateMachine(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, Chan
 				}
 			case <-ChanStop:
 				switch e.Behaviour {
-					case elevio.EB_Idle: // do i need these too
-					case elevio.EB_Moving: // do i need these too
+					case elevio.EB_Idle: 
+						elevio.SetMotorDirection(elevio.MD_Stop)
+						fsm.RunningElevator.Behaviour = elevio.EB_Idle
+						fsm.RunningElevator.Dirn = elevio.MD_Stop
+					case elevio.EB_Moving:
+						elevio.SetMotorDirection(elevio.MD_Stop)
+						fsm.RunningElevator.Behaviour = elevio.EB_Idle
+						fsm.RunningElevator.Dirn = elevio.MD_Stop
+
 					case elevio.EB_DoorOpen:
 						if !obstr {
 							DoorOpenTimer.Reset(time.Duration(e.Config.DoorOpenDuration) * time.Second)
@@ -147,6 +152,8 @@ func StateMachine(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, Chan
 			}
 		}
 }
+
+//bytter state i timer
 
 // For å skille mellom hvilke knapper som er trykket på
 func BtnEventSplitter(btnEvent chan elevio.ButtonEvent,

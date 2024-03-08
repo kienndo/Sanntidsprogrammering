@@ -5,8 +5,7 @@ import (
 )
 
 
-
-func requests_mergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests [elevio.N_FLOORS]bool) [elevio.N_FLOORS][elevio.N_BUTTONS]bool {
+func MergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests [elevio.N_FLOORS]bool) [elevio.N_FLOORS][elevio.N_BUTTONS]bool {
 	var requests [elevio.N_FLOORS][elevio.N_BUTTONS]bool
 	for i := range requests {
 		requests[i] = [elevio.N_BUTTONS]bool{hallRequests[i][0], hallRequests[i][1], cabRequests[i]}
@@ -14,7 +13,7 @@ func requests_mergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests
 	return requests
 }
 
-// This function
+
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) bool {
 	switch e.Config.ClearRequestVariant {
 	case elevio.CV_All:
@@ -67,7 +66,7 @@ func ChooseDirection(e elevio.Elevator) elevio.DirnBehaviourPair {
 }
 
 func IfFloorAbove(e elevio.Elevator) bool {
-	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+	Request := MergeHallAndCab(e.HallRequests, e.CabRequests)
 	for f := e.Floor + 1; f < elevio.N_FLOORS; f++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
 			if Request[f][btn] {
@@ -79,7 +78,7 @@ func IfFloorAbove(e elevio.Elevator) bool {
 }
 
 func IfFloorBelow(e elevio.Elevator) bool {
-	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+	Request := MergeHallAndCab(e.HallRequests, e.CabRequests)
 	for f := 0; f < e.Floor; f++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
 			if Request[f][btn] {
@@ -91,7 +90,7 @@ func IfFloorBelow(e elevio.Elevator) bool {
 }
 
 func IfFloorHere(e elevio.Elevator) bool {
-	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+	Request := MergeHallAndCab(e.HallRequests, e.CabRequests)
 	for btn := 0; btn < elevio.N_BUTTONS; btn++ {
 		if Request[e.Floor][btn] {
 			return true
@@ -100,7 +99,7 @@ func IfFloorHere(e elevio.Elevator) bool {
 	return false
 }
 func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
-	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+	Request := MergeHallAndCab(e.HallRequests, e.CabRequests)
 	switch e.Config.ClearRequestVariant {
 	case elevio.CV_All:
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
@@ -131,7 +130,7 @@ func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
 }
 
 func ShouldStop(e elevio.Elevator) bool {
-	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+	Request := MergeHallAndCab(e.HallRequests, e.CabRequests)
 	switch e.Dirn {
 	case elevio.MD_Down:
 		return Request[e.Floor][elevio.BT_HallDown] == true || Request[e.Floor][elevio.BT_Cab] == true || !IfFloorBelow(e)
@@ -144,8 +143,8 @@ func ShouldStop(e elevio.Elevator) bool {
 	}
 }
 
-func requests_getExecutedHallOrder(e elevio.Elevator) elevio.ButtonEvent {
-	requests := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+func GetExecutedHallOrder(e elevio.Elevator) elevio.ButtonEvent {
+	requests := MergeHallAndCab(e.HallRequests, e.CabRequests)
 	switch e.Dirn {
 	case elevio.MD_Stop:
 		if requests[e.Floor][elevio.BT_HallUp] && IfFloorAbove(e) == false {
