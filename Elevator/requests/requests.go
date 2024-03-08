@@ -5,9 +5,7 @@ import (
 )
 
 
-<<<<<<< HEAD
 
-=======
 func requests_mergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests [elevio.N_FLOORS]bool) [elevio.N_FLOORS][elevio.N_BUTTONS]bool {
 	var requests [elevio.N_FLOORS][elevio.N_BUTTONS]bool
 	for i := range requests {
@@ -17,7 +15,6 @@ func requests_mergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests
 }
 
 // This function
->>>>>>> 0cb603f (8.mars)
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) bool {
 	switch e.Config.ClearRequestVariant {
 	case elevio.CV_All:
