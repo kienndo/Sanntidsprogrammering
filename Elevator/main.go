@@ -7,14 +7,13 @@ import (
 	"fmt"
 )
 
-
 func main() {
 
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
 	
-	go fsm.FsmCheckForDoorTimeout()
+	go fsm.CheckForTimeout()
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -25,8 +24,6 @@ func main() {
 	go elevio.PollFloorSensor(drv_floors)
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
-
-	go fsm.FsmCheckForDoorTimeout()
 
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
