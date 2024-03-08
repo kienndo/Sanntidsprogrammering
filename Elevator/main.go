@@ -1,21 +1,15 @@
 package main
 
 import (
-	//"Sanntidsprogrammering/Elevator/devices"
+
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	//timer "Sanntidsprogrammering/Elevator/timer"
 	"fmt"
-	"time"
 )
 
-var (
-	//input devices.ElevInputDevice
-)
 
 func main() {
 
-	// Given main function for going up and down and registering floors
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
@@ -32,29 +26,41 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
-	
+	go fsm.FsmCheckForDoorTimeout()
 
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
-	// Request button
-	// var prevFloor = make([][]bool, elevio.N_FLOORS)
-	// for i := 0; i < elevio.N_FLOORS; i++ {
-	// 	prevFloor[i] = make([]bool, elevio.N_BUTTONS)
-	// }
 
-	// var previous int = -1
+	fsm.InitLights() 
 
 	for {
+		
 		select {
 		case a := <-drv_buttons:
+			// Button signal
+			fmt.Printf("%+v\n", a)
+			//io.SetButtonLamp(a.Button, a.Floor, true) hva er dette
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
-			//ElevatorModules.AddCabRequest(a.Floor, a.Button)
+
 		case a := <-drv_floors:
+			// Floor signal
 			fmt.Printf("%+v\n", a)
 			fsm.FsmOnFloorArrival(a)
-		
-		time.Sleep(250 * time.Millisecond)
+
+		case a := <-drv_obstr:
+			//Obstruction IMPLEMENT
+			fmt.Printf("%+v\n", a)
+
+		case a := <-drv_stop: //IMPLEMENT
+			//Stop button signal
+			fmt.Printf("%+v\n", a)
+			//Turn all buttons off
+			// for f := 0; f < numFloors; f++ {
+			// 	for b := io.ButtonType(0); b < 3; b++ {
+			// 		module.SetButtonLamp(b, f, false)
+			// 	}
+			// }
 		}
 	}
 }

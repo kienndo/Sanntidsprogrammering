@@ -1,7 +1,6 @@
 package fsm
 
 import (
-	devices "Sanntidsprogrammering/Elevator/devices"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
@@ -23,19 +22,12 @@ var (
 			ClearRequestVariant: elevio.CV_All,
 		},
 	}
-	outputDevice devices.ElevOutputDevice
-	pair		 elevio.DirnBehaviourPair
 )
 
-// Initialize the elevator with FSM
-// func FSM_init() {
-
-	
-// 	fmt.Printf("FSM initialized")
-// 	// Initialize outputDevice here
-// 	outputDevice = devices.Elevio_GetOutputDevice()
-// 	outputDevice.DoorLight(false)
-// }
+func InitLights() {
+	elevio.SetDoorOpenLamp(false)
+	SetAllLights(elevator)
+}
 
 func SetAllLights(es elevio.Elevator) {
 	for floor := 0; floor < elevio.N_FLOORS; floor++ {
@@ -86,10 +78,7 @@ func FsmOnRequestButtonPress(btn_floor int, btn_type elevio.ButtonType) {
 		}
 	}
 	SetAllLights(elevator)
-
-	var state string = elevio.EbToString(elevator.Behaviour)
-	fmt.Printf("\nNew state after button press: %d\n", state)
-	fmt.Println("%v", elevator.Request)
+	
 }
 
 func FsmOnFloorArrival(newFloor int) {
@@ -114,8 +103,6 @@ func FsmOnFloorArrival(newFloor int) {
 	default:
 		break
 	}
-	var state string = elevio.EbToString(elevator.Behaviour)
-	fmt.Println("\nNew state after arrival: ", state)
 }
 
 func FsmOnDoorTimeout() {
@@ -145,10 +132,8 @@ func FsmOnDoorTimeout() {
 		}
 	default:
 		elevator.Behaviour = elevio.EB_Idle
-		break
+		//break
 	}
-
-	fmt.Println("\nNew state after Timeout: ", elevio.EbToString(elevator.Behaviour))
 }
 
 
