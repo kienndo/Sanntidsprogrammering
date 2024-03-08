@@ -25,8 +25,7 @@ type Elevator struct {
 	Floor int // Which floor
 	Dirn MotorDirection // Which direction the elevator is going in
 	Behaviour ElevatorBehaviour // Which state the elevator is in
-	CabRequests      [N_FLOORS]bool
-	HallRequests     [N_FLOORS][2]bool
+	Request [N_FLOORS][N_BUTTONS]int
 	Config Config // Configuration of the elevator
 }
 

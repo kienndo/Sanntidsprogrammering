@@ -19,7 +19,7 @@ func main() {
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
-	fsm.FSM_init()
+	//fsm.FSM_init()
 
 	// Channels for all the different inputs
 	//drv_buttons := make(chan elevio.ButtonEvent)
