@@ -7,6 +7,8 @@ import (
 	"Sanntidsprogrammering/Elevator/requests"
 	"time"
 )
+//prank bro xD
+
 
 // gitt i main:
 //numFloors := 4
@@ -66,7 +68,6 @@ func StateMachine(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, Chan
 		//fsm.RunningElevator.Dirn = elevio.MD_Down
 		//fsm.RunningElevator.Behaviour = elevio.EB_Moving
 		// okei skal jeg være helt ærlig skjønner jeg ikke hvorfor denne initialiseringen trengs fordi kan man ikke gå rett på state machine
-		// Channels for all the different inputs
 		
 		// This for-loop basically just listens to all the channels to see if something happens
 		for{
@@ -84,7 +85,7 @@ func StateMachine(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, Chan
 					}
 				}	
 			case <-ChanObstr: // do i need this in chan floors too?
-				if obstr {
+				for obstr {
 					// Stop timer
 				}
 				switch e.Behaviour {
@@ -96,7 +97,14 @@ func StateMachine(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, Chan
 					}
 				}
 			case <-ChanStop:
-				// fuck må implementere selv
+				switch e.Behaviour {
+					case elevio.EB_Idle: // do i need these too
+					case elevio.EB_Moving: // do i need these too
+					case elevio.EB_DoorOpen:
+						if !obstr {
+							DoorOpenTimer.Reset(time.Duration(e.Config.DoorOpenDuration) * time.Second)
+						}
+					}
 			case <-ChanHall: // Taking in an order from the hall
 			switch e.Behaviour {
 			case elevio.EB_DoorOpen:
@@ -109,15 +117,15 @@ func StateMachine(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, Chan
 				case elevio.EB_Idle:
 				case elevio.EB_DoorOpen:
 					elevio.SetDoorOpenLamp(true)
-					//set timer
+					DoorOpenTimer.Reset(time.Duration(e.Config.DoorOpenDuration) * time.Second)
 
 				case elevio.EB_Moving:
 					elevio.SetMotorDirection(e.Dirn)
 				}
 			}
-			case CabButtonEvent := <-ChanCab:
+			case <-ChanCab:
 				//e.CabRequests[] = true LØSE DENNE
-				elevio.SetButtonLamp(elevio.BT_Cab, CabButtonEvent.Floor, true)
+				elevio.SetButtonLamp(elevio.BT_Cab, e.Floor, true)
 			
 				switch e.Behaviour {
 				case elevio.EB_DoorOpen:
