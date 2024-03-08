@@ -6,6 +6,7 @@ import (
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
 	"fmt"
+	"time"
 )
 
 var (
@@ -131,19 +132,33 @@ func FsmOnDoorTimeout() {
 			timer.TimerStart(elevator.Config.DoorOpenDuration)
 			elevator = requests.ClearAtCurrentFloor(elevator)
 			SetAllLights(elevator) // CAB???
-			//elevator.Behaviour = elevio.EB_Idle
+			elevator.Behaviour = elevio.EB_Idle
 		case elevio.EB_Moving:
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elevator.Dirn)
+			elevator.Behaviour = elevio.EB_Idle
 
 		case elevio.EB_Idle:
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elevator.Dirn)
+			elevator.Behaviour = elevio.EB_Idle
 		}
 	default:
-		//elevator.Behaviour = elevio.EB_Idle
+		elevator.Behaviour = elevio.EB_Idle
 		break
 	}
 
 	fmt.Println("\nNew state after Timeout: ", elevio.EbToString(elevator.Behaviour))
+}
+
+
+func FsmCheckForDoorTimeout() {
+	for {
+
+		 if timer.TimerTimedOut() != 0 {
+			timer.TimerStop()
+			FsmOnDoorTimeout()
+		 }
+		 time.Sleep(10*time.Millisecond)
+	}
 }

@@ -4,8 +4,8 @@ import (
 	//"Sanntidsprogrammering/Elevator/devices"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	timer "Sanntidsprogrammering/Elevator/timer"
-	//"fmt"
+	//timer "Sanntidsprogrammering/Elevator/timer"
+	"fmt"
 	"time"
 )
 
@@ -20,6 +20,7 @@ func main() {
 
 	elevio.Init("localhost:15657", numFloors)
 	
+	go fsm.FsmCheckForDoorTimeout()
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -37,42 +38,23 @@ func main() {
 		fsm.FsmOnInitBetweenFloors()
 	}
 	// Request button
-	var prevFloor = make([][]bool, elevio.N_FLOORS)
-	for i := 0; i < elevio.N_FLOORS; i++ {
-		prevFloor[i] = make([]bool, elevio.N_BUTTONS)
-	}
+	// var prevFloor = make([][]bool, elevio.N_FLOORS)
+	// for i := 0; i < elevio.N_FLOORS; i++ {
+	// 	prevFloor[i] = make([]bool, elevio.N_BUTTONS)
+	// }
 
-	var previous int = -1
+	// var previous int = -1
 
 	for {
-
+		select {
+		case a := <-drv_buttons:
+			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
+			//ElevatorModules.AddCabRequest(a.Floor, a.Button)
+		case a := <-drv_floors:
+			fmt.Printf("%+v\n", a)
+			fsm.FsmOnFloorArrival(a)
 		
-
-		for f := 0; f < elevio.N_FLOORS; f++ {
-			for b := 0; b < elevio.N_BUTTONS; b++ {
-				v := elevio.GetButton(elevio.ButtonType(b), f)
-				if v != false && prevFloor[f][b] != v {
-					fsm.FsmOnRequestButtonPress(f, elevio.ButtonType(b))
-				}
-				prevFloor[f][b] = v
-			}
+		time.Sleep(250 * time.Millisecond)
 		}
-
-		{
-			// Floor sensor
-
-			g := elevio.GetFloor()
-			if g != -1 && g != previous {
-				fsm.FsmOnFloorArrival(g)
-			}
-			previous = g
-			
-
-			if timer.TimerTimedOut() {
-				timer.TimerStop()
-				fsm.FsmOnDoorTimeout()
-			}
-		}
-		time.Sleep(time.Duration(250) * time.Millisecond)
 	}
 }
