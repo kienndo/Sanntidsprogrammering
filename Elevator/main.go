@@ -5,7 +5,11 @@ import (
 	"Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	timer "Sanntidsprogrammering/Elevator/timer"
+<<<<<<< HEAD
 	"fmt"
+=======
+	//"fmt"
+>>>>>>> 0cb603f (8.mars)
 	"time"
 )
 
@@ -60,7 +64,11 @@ func main() {
 				fsm.FsmOnFloorArrival(g)
 			}
 			previous = g
+<<<<<<< HEAD
 			fmt.Printf("(%d)", timer.TimerActive)
+=======
+			
+>>>>>>> 0cb603f (8.mars)
 
 			if timer.TimerTimedOut() {
 				timer.TimerStop()

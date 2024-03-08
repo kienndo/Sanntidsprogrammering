@@ -1,2 +1,80 @@
-Puttet datatypes inni elevio fordi det var mye overlappende
-Hva faen er ClearRequestVariant
+---------------TING JEG HAR ENDRET SOM ER Å BEMERKE SEG--------------------------------
+stor forbokstav på elevator og outputdevice!
+
+
+
+---------------HVORDAN SPLITTE MELLOM OM NOE ER CAB ELLER HALL--------------------------------
+Jeg splittet Hall og Cab på requests i Elevator-structen
+En måte å splitte mellom hall og cab:
+
+func BtnEventSplitter(btnEvent chan elevio.ButtonEvent,
+	hallEvent chan elevio.ButtonEvent,
+	cabEvent chan elevio.ButtonEvent) {
+	for {
+		select {
+		case event := <-btnEvent:
+			if event.Button == elevio.BT_Cab {
+				cabEvent <- event
+			} else {
+				hallEvent <- event
+			}
+		}
+	}
+}
+---------------------REQUESTS, HALL OG CAB---------------------------------
+Requests i Elevator-struct gjøres om til cab og hall slik at vi kan skille mellom, men vi lager en funksjon 
+som likestiller dem ved requestfunksjoner i requests.go:
+Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+
+Prøv å skjønne denne: 
+func requests_mergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests [elevio.N_FLOORS]bool) [elevio.N_FLOORS][elevio.N_BUTTONS]bool {
+	var requests [elevio.N_FLOORS][elevio.N_BUTTONS]bool
+	for i := range requests {
+		requests[i] = [elevio.N_BUTTONS]bool{hallRequests[i][0], hallRequests[i][1], cabRequests[i]}
+	}
+	return requests
+}
+---------------------EXECUTE REQUESTED HALL ORDER---------------------------------
+
+
+---------------------HVORDAN FUNGERER EGT FRED SIN KODE---------------------------------
+Tar inn alle channels
+Definerer en button event som bare skal være ordren som tas inn
+Det settes også en timer
+Hvorfor settes det så jævlig mange forskjellige timere jesus kristus
+
+Initaliserer en init-heis
+Stopper de timerne som jeg ikke skjønner hvorfor timerne er der
+
+Så kommer det en evig while løkke som egt bare er en intialisering av systemet og breaker bare hvis the conditions are right
+kan dette gjøres uten while løkke? sånn fsminitbetweenfloors med litt tweak hehe
+    de har skrevet at heisen skal starte med stoppedirection(er vel valid det hvis jeg bare justifyer at jeg vil at den bare starter hvor som helst med en MD.stop)
+så sjekker de om det kommer inn cab requests og hvis de merker noen cabrequest
+    og slår i så fall på lyset der(kan ta bestillinger selv om vi nettopp har startet)
+direction settes og elevator sin retning og state settes
+Timeren kommer inn igjen, men tror vi dropper den ass for det virker som den bare tar tiden på at dataen sendes
+
+Swith med hvilken tilstand vi er i
+    Hvis Idle så skjer ingenting da vi allerede stoppet
+    Hvis Moving så sette motor i gang
+    Hvis DoorOpen så sett i gang lampen og sett i gang timer
+Ferdig med en av disse så ut, ferdig med intialisering
+NEI okei den skal ned uansett, eneste grunnen til at den starter med stopp er fordi det kan hende den får en bestillinger
+    så casene er basically, får jeg bestilling eller ikke
+
+Så sjekker de egt bare alle channelsene hele tiden gjennom channelsene
+    ordre fra hall
+    om cab trykkes ned
+    hvilken etasje (til indikator)
+    case <-doorOpenTimer.C: faktisk litt usikker på hva der her skal bety med tanke på lissom timer men okei, men det er vel om det er en aktiv dørtimer?
+    hvis vi får noe fra obstruksjon
+    så kommer de to jævla timerne igjen
+
+
+okei så cluet med timerne er egt en konstant lytting av alle signaler
+som definerer hva man ønsker og slå på eller ikke
+får du en ordre må du alltid ta i mot og sette den som true i matrisen
+---------------------må fikse---------------------------------
+dobbelsjekk at logikken gir mening
+fikse timer
+legge inn hall assigner

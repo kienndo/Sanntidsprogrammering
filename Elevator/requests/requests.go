@@ -5,7 +5,19 @@ import (
 )
 
 
+<<<<<<< HEAD
 
+=======
+func requests_mergeHallAndCab(hallRequests [elevio.N_FLOORS][2]bool, cabRequests [elevio.N_FLOORS]bool) [elevio.N_FLOORS][elevio.N_BUTTONS]bool {
+	var requests [elevio.N_FLOORS][elevio.N_BUTTONS]bool
+	for i := range requests {
+		requests[i] = [elevio.N_BUTTONS]bool{hallRequests[i][0], hallRequests[i][1], cabRequests[i]}
+	}
+	return requests
+}
+
+// This function
+>>>>>>> 0cb603f (8.mars)
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) bool {
 	switch e.Config.ClearRequestVariant {
 	case elevio.CV_All:
@@ -58,9 +70,10 @@ func ChooseDirection(e elevio.Elevator) elevio.DirnBehaviourPair {
 }
 
 func IfFloorAbove(e elevio.Elevator) bool {
+	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
 	for f := e.Floor + 1; f < elevio.N_FLOORS; f++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
-			if e.Request[f][btn] == 1 {
+			if Request[f][btn] {
 				return true
 			}
 		}
@@ -69,9 +82,10 @@ func IfFloorAbove(e elevio.Elevator) bool {
 }
 
 func IfFloorBelow(e elevio.Elevator) bool {
+	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
 	for f := 0; f < e.Floor; f++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
-			if e.Request[f][btn] == 1 {
+			if Request[f][btn] {
 				return true
 			}
 		}
@@ -80,37 +94,39 @@ func IfFloorBelow(e elevio.Elevator) bool {
 }
 
 func IfFloorHere(e elevio.Elevator) bool {
+	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
 	for btn := 0; btn < elevio.N_BUTTONS; btn++ {
-		if e.Request[e.Floor][btn] == 1 {
+		if Request[e.Floor][btn] {
 			return true
 		}
 	}
 	return false
 }
 func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
+	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
 	switch e.Config.ClearRequestVariant {
 	case elevio.CV_All:
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
-			e.Request[e.Floor][btn] = 0
+			Request[e.Floor][btn] = false
 		}
 	case elevio.CV_InDirn:
-		e.Request[e.Floor][elevio.BT_Cab] = 0
+		Request[e.Floor][elevio.BT_Cab] = false
 		switch e.Dirn {
 		case elevio.MD_Up:
-			if !IfFloorAbove(e) && e.Request[e.Floor][elevio.BT_HallUp] == 0 {
-				e.Request[e.Floor][elevio.BT_HallDown] = 0
+			if !IfFloorAbove(e) && Request[e.Floor][elevio.BT_HallUp] == false {
+				Request[e.Floor][elevio.BT_HallDown] = false
 			}
-			e.Request[e.Floor][elevio.BT_HallUp] = 0
+			Request[e.Floor][elevio.BT_HallUp] = false
 		case elevio.MD_Down:
-			if !IfFloorBelow(e) && e.Request[e.Floor][elevio.BT_HallDown] == 0 {
-				e.Request[e.Floor][elevio.BT_HallUp] = 0
+			if !IfFloorBelow(e) && Request[e.Floor][elevio.BT_HallDown] == false {
+				Request[e.Floor][elevio.BT_HallUp] = false
 			}
-			e.Request[e.Floor][elevio.BT_HallDown] = 0
+			Request[e.Floor][elevio.BT_HallDown] = false
 		case elevio.MD_Stop:
 			fallthrough
 		default:
-			e.Request[e.Floor][elevio.BT_HallUp] = 0
-			e.Request[e.Floor][elevio.BT_HallDown] = 0
+			Request[e.Floor][elevio.BT_HallUp] = false
+			Request[e.Floor][elevio.BT_HallDown] = false
 		}
 	default:
 	}
@@ -118,14 +134,45 @@ func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
 }
 
 func ShouldStop(e elevio.Elevator) bool {
+	Request := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
 	switch e.Dirn {
 	case elevio.MD_Down:
-		return e.Request[e.Floor][elevio.BT_HallDown] == 1 || e.Request[e.Floor][elevio.BT_Cab] == 1 || !IfFloorBelow(e)
+		return Request[e.Floor][elevio.BT_HallDown] == true || Request[e.Floor][elevio.BT_Cab] == true || !IfFloorBelow(e)
 	case elevio.MD_Up:
-		return e.Request[e.Floor][elevio.BT_HallUp] == 1 || e.Request[e.Floor][elevio.BT_Cab] == 1 || !IfFloorAbove(e)
+		return Request[e.Floor][elevio.BT_HallUp] == true || Request[e.Floor][elevio.BT_Cab] == true || !IfFloorAbove(e)
 	case elevio.MD_Stop:
 		fallthrough
 	default:
 		return true
+	}
+}
+
+func requests_getExecutedHallOrder(e elevio.Elevator) elevio.ButtonEvent {
+	requests := requests_mergeHallAndCab(e.HallRequests, e.CabRequests)
+	switch e.Dirn {
+	case elevio.MD_Stop:
+		if requests[e.Floor][elevio.BT_HallUp] && IfFloorAbove(e) == false {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallUp}
+		} else if requests[e.Floor][elevio.BT_HallDown] && !IfFloorBelow(e) {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallDown}
+		} else if requests[e.Floor][elevio.BT_HallDown] && IfFloorBelow(e) {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallDown}
+		} else {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallUp}
+		}
+	case elevio.MD_Up:
+		if !requests[e.Floor][elevio.BT_HallUp] && !IfFloorAbove(e) {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallDown}
+		} else {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallUp}
+		}
+	case elevio.MD_Down:
+		if !requests[e.Floor][elevio.BT_HallDown] && !IfFloorBelow(e) {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallUp}
+		} else {
+			return elevio.ButtonEvent{Floor: e.Floor, Button: elevio.BT_HallDown}
+		}
+	default:
+		panic("Elevator request error")
 	}
 }
