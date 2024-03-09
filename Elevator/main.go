@@ -21,8 +21,7 @@ func main() {
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
-	drv_hall := make(chan elevio.ButtonEvent)
-	drv_cab := make(chan elevio.ButtonEvent)
+	
 
 	go elevio.PollButtons(drv_buttons)
 	go elevio.PollFloorSensor(drv_floors)
@@ -36,7 +35,7 @@ func main() {
 
 	fsm.InitLights()
 	//go fsm.FsmStopSignal()
-
+	
 	for {
 
 		select {
@@ -44,7 +43,7 @@ func main() {
 			// Button signal
 			fmt.Printf("%+v\n", a)
 			
-			master.WhichButton(a, drv_hall, drv_cab)
+			master.WhichButton(a)
 			master.CostFunction()
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 

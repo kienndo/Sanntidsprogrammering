@@ -20,11 +20,12 @@ var _conn net.Conn
 
 
 type Elevator struct {
-	Floor int 							`json:"floor"` 
-	Dirn MotorDirection					`json:"direction"`
-	Behaviour ElevatorBehaviour 		`json:"behaviour"`
-	Request [N_FLOORS][N_BUTTONS]bool	`json:"cabRequests"`	
-	Config Config 						`json:"config"`
+	Floor int 							
+	Dirn MotorDirection					
+	Behaviour ElevatorBehaviour 		
+	Request [N_FLOORS][N_BUTTONS]bool
+	CabRequests []bool		
+	Config Config 						
 }
 
 type Config struct {
@@ -232,13 +233,13 @@ func toBool(a byte) bool {
 func EbToString(eb ElevatorBehaviour) string {
 	switch eb {
 	case EB_Idle:
-		return "EB_Idle"
+		return "idle"
 	case EB_DoorOpen:
-		return "EB_DoorOpen"
+		return "door open"
 	case EB_Moving:
-		return "EB_Moving"
+		return "moving"
 	default:
-		return "EB_UNDEFINED"
+		return "undefined"
 	}
 }
 
@@ -246,13 +247,13 @@ func EbToString(eb ElevatorBehaviour) string {
 func ElevioDirnToString(d MotorDirection) string {
 	switch d {
 	case MD_Up:
-		return "D_Up"
+		return "up"
 	case MD_Down:
-		return "D_Down"
+		return "down"
 	case MD_Stop:
-		return "D_Stop"
+		return "stop"
 	default:
-		return "D_UNDEFINED"
+		return "undefined"
 	}
 }
 

@@ -5,50 +5,57 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	"os/exec"
 	"encoding/json"
-	//fsm "Sanntidsprogrammering/Elevator/fsm"
 )
 
 const hraExecutable = "/home/student/Sanntidsprogrammering/Elevator/hall_request_assigner"
 
+type HRAElevState struct {
+    Behavior    string      `json:"behaviour"`
+    Floor       int         `json:"floor"` 
+    Direction   string      `json:"direction"`
+    CabRequests []bool      `json:"cabRequests"`
+}
+
+
 type HRAInput struct {
-	HallRequests 	[][2]int							`json:"hallRequests"`
-	States 			map[string]elevio.Elevator			 `json:"states"`
+	HallRequests 	[][2]bool					`json:"hallRequests"`
+	States 			map[string]HRAElevState		 `json:"states"`
 }
 
 var(
-	ElevatorCabRequests [elevio.N_FLOORS]int
-	MasterHallRequests [elevio.N_FLOORS][2]int
+	MasterHallRequests [elevio.N_FLOORS][2]bool
 
 	// Our three elevators
 	Elevator1 = elevio.Elevator{
 		Floor: -1,
 		Dirn:  elevio.MD_Stop,
 		Behaviour: elevio.EB_Idle,
-		Request: [elevio.N_FLOORS][elevio.N_BUTTONS]bool{{false, false, false}, 
-														{false, false, false}, 
-														{false, false, false}, 
-														{false, false, false}},
-		Config: elevio.Config{
-			DoorOpenDuration:    3.0,
-			ClearRequestVariant: elevio.CV_All,
-		},
+		CabRequests: []bool {true, true, false, false},
 	}
+	
 	Elevator2 elevio.Elevator
 	Elevator3 elevio.Elevator
 
 	Input = HRAInput{
-		HallRequests: 	[][2]int {{0, 0}, {1, 1}, {0, 0}, {0, 1}},
-		States: map[string]elevio.Elevator{
+		HallRequests: 	[][2]bool {{false, false}, {true, true}, {false, false}, {false, true}}, //må lage array for bare hallrequest
+		States: map[string]HRAElevState{
 			"one": {
-				Behaviour:      Elevator1.Behaviour,
-				Floor:          Elevator1.Floor,
-				Dirn:           Elevator1.Dirn,
-				Request:        Elevator1.Request,
+				Behavior:      elevio.EbToString(Elevator1.Behaviour),
+				Floor:         AvoidNegativeFloor(Elevator1), 
+				Direction:     elevio.ElevioDirnToString(Elevator1.Dirn),
+				CabRequests:    Elevator1.CabRequests, 
 			},
 		},
 	}
 )
 
+func AvoidNegativeFloor(e elevio.Elevator) int {
+	
+	if e.Floor == -1{
+		return 1
+	}
+	return e.Floor
+}
 
 func CostFunction(){
 	jsonBytes, err := json.Marshal(Input)
@@ -78,20 +85,18 @@ func CostFunction(){
 
 }	
 
-func WhichButton(btnEvent elevio.ButtonEvent,
-	hallEvent chan elevio.ButtonEvent,
-	cabEvent chan elevio.ButtonEvent) {
+func WhichButton(btnEvent elevio.ButtonEvent) {
 
 		switch {
 		case btnEvent.Button == elevio.BT_Cab:
 			fmt.Println("CAB", btnEvent)
-			ElevatorCabRequests[btnEvent.Floor] = 1;
+			Elevator1.CabRequests[btnEvent.Floor] = true;
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
-			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = 1;
+			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
-			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = 1;
+			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
 		default:
 			break
 		}
