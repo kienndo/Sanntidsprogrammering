@@ -3,10 +3,9 @@ package main
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	master "Sanntidsprogrammering/Elevator/master"
-
-	//requests "Sanntidsprogrammering/Elevator/requests"
+	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
+	//backup "Sanntidsprogrammering/Elevator/backup"
 )
 
 func main() {
@@ -34,7 +33,8 @@ func main() {
 	//fmt.Println(master.Input)
 
 	fsm.InitLights()
-	//go fsm.FsmStopSignal()
+	//backup.RunBackup()
+	//backup.RunPrimary()
 	
 	for {
 		
@@ -43,14 +43,14 @@ func main() {
 			// Button signal
 			fmt.Printf("%+v\n", a)
 			
-			master.WhichButton(a)
-			master.CostFunction()
+			costfunctions.WhichButton(a)
+			costfunctions.CostFunction()
 	
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 			
 		case a := <-drv_floors:
 			// Floor signal
-			master.GetLastValidFloor(a)
+			costfunctions.GetLastValidFloor(a)
 			fmt.Printf("%+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 
@@ -70,5 +70,4 @@ func main() {
 				
 		}
 	}
-
 }

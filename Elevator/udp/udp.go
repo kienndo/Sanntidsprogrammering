@@ -43,7 +43,22 @@ func AliveSend() {
 
 	time.Sleep(time.Second)
 
-
 }
 
+func SendUDP(host string, port int, message string) {
+	udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, port))
+
+	conn, err := net.DialUDP("udp", nil, udpAddr)
+	if err != nil {
+		fmt.Println("Error dialing UDP:", err)
+		return
+	}
+	defer conn.Close()
+
+	_, err = conn.Write([]byte(message))
+	if err != nil {
+		fmt.Println("Error sending UDP message:", err)
+		return
+	}
+}
 
