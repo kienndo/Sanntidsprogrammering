@@ -32,6 +32,7 @@ func main() {
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
+	//fmt.Println(master.Input)
 
 	fsm.InitLights()
 	//go fsm.FsmStopSignal()
@@ -44,7 +45,7 @@ func main() {
 			fmt.Printf("%+v\n", a)
 			
 			master.WhichButton(a, drv_hall, drv_cab)
-			fmt.Println("KOM SEG UT")
+			master.CostFunction()
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 
 		case a := <-drv_floors:

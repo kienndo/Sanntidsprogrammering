@@ -20,11 +20,11 @@ var _conn net.Conn
 
 
 type Elevator struct {
-	Floor int 
-	Dirn MotorDirection
-	Behaviour ElevatorBehaviour 
-	Request [N_FLOORS][N_BUTTONS]int
-	Config Config 
+	Floor int 							`json:"floor"` 
+	Dirn MotorDirection					`json:"direction"`
+	Behaviour ElevatorBehaviour 		`json:"behaviour"`
+	Request [N_FLOORS][N_BUTTONS]int	`json:"cabRequests"`	
+	Config Config 						`json:"config"`
 }
 
 type Config struct {
