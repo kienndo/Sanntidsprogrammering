@@ -11,10 +11,10 @@ var (
 		Floor: -1,
 		Dirn:  elevio.MD_Stop,
 		Behaviour: elevio.EB_Idle,
-		Request: [elevio.N_FLOORS][elevio.N_BUTTONS]int{{0, 0, 0}, 
-														{0, 0, 0}, 
-														{0, 0, 0}, 
-														{0, 0, 0}},
+		Request: [elevio.N_FLOORS][elevio.N_BUTTONS]bool{{false, false, false}, 
+														{false, false, false}, 
+														{false, false, false}, 
+														{false, false, false}},
 		Config: elevio.Config{
 			DoorOpenDuration:    3.0,
 			ClearRequestVariant: elevio.CV_All,
@@ -22,15 +22,11 @@ var (
 	}
 	ObstructionIndicator bool
 )
-// func PrintState() {
-// 	fmt.Println(StateToString(elevator.state))
-// 	fmt.Println("Directelevion: ", elevator.dirn)
-// }
 
 func SetAllLights(es elevio.Elevator) {
 	for floor := 0; floor < elevio.N_FLOORS; floor++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
-			if es.Request[floor][btn] != 0 {
+			if es.Request[floor][btn] != false {
 				elevio.SetButtonLamp(elevio.ButtonType(btn), floor, true)
 			} else {
 				elevio.SetButtonLamp(elevio.ButtonType(btn), floor, false)
@@ -61,12 +57,12 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 			} else {
 				//Update master matrix
 			}
-			elevator.Request[btn_Floor][btn_type] = 1
+			elevator.Request[btn_Floor][btn_type] = true
 		}
 	case elevio.EB_Moving:
-		elevator.Request[btn_Floor][btn_type] = 1
+		elevator.Request[btn_Floor][btn_type] = true
 	case elevio.EB_Idle:
-		elevator.Request[btn_Floor][btn_type] = 1
+		elevator.Request[btn_Floor][btn_type] = true
 		var pair elevio.DirnBehaviourPair = requests.ChooseDirection(elevator)
 		elevator.Dirn = pair.Dirn
 		elevator.Behaviour = pair.Behaviour

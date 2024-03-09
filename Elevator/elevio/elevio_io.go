@@ -23,7 +23,7 @@ type Elevator struct {
 	Floor int 							`json:"floor"` 
 	Dirn MotorDirection					`json:"direction"`
 	Behaviour ElevatorBehaviour 		`json:"behaviour"`
-	Request [N_FLOORS][N_BUTTONS]int	`json:"cabRequests"`	
+	Request [N_FLOORS][N_BUTTONS]bool	`json:"cabRequests"`	
 	Config Config 						`json:"config"`
 }
 
