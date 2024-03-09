@@ -18,6 +18,7 @@ var _numFloors int = 4
 var _mtx sync.Mutex
 var _conn net.Conn
 
+
 type Elevator struct {
 	Floor int 
 	Dirn MotorDirection

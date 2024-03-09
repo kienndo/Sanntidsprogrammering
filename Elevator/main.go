@@ -3,6 +3,7 @@ package main
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	//requests "Sanntidsprogrammering/Elevator/requests"
 	"fmt"
 )
 
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	fsm.InitLights()
+	//go fsm.FsmStopSignal()
 
 	for {
 
@@ -45,18 +47,23 @@ func main() {
 			fsm.FsmOnFloorArrival(a)
 
 		case a := <-drv_obstr:
-			//Obstruction IMPLEMENT
+			//Obstruction
+			// Does not seem to want to keep the door open
 			fmt.Printf("%+v\n", a)
+			fmt.Printf("Obstructing?")
+			fsm.ObstructionIndicator = a
+			go fsm.FsmObstruction(fsm.ObstructionIndicator)
+			
 
-		case a := <-drv_stop: //IMPLEMENT
+		case a := <-drv_stop: 
+			// Does not keep going after the button is not pushed on
 			//Stop button signal
 			fmt.Printf("%+v\n", a)
-			//Turn all buttons off
-			// for f := 0; f < numFloors; f++ {
-			// 	for b := io.ButtonType(0); b < 3; b++ {
-			// 		module.SetButtonLamp(b, f, false)
-			// 	}
-			// }
+			//
+			go fsm.FsmStopSignal(a) 
+			
+			
 		}
 	}
+
 }

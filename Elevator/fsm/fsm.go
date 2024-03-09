@@ -20,6 +20,7 @@ var (
 			ClearRequestVariant: elevio.CV_All,
 		},
 	}
+	ObstructionIndicator bool
 )
 // func PrintState() {
 // 	fmt.Println(StateToString(elevator.state))
@@ -132,5 +133,24 @@ func CheckForTimeout() {
 			timer.TimerStop()
 			FsmOnDoorTimeout()
 		}
+	}
+}
+
+func FsmStopSignal(a bool){
+	var prevState elevio.ElevatorBehaviour = elevator.Behaviour
+	var prevDirn elevio.MotorDirection = elevator.Dirn
+	
+	for a == true {
+		elevio.SetMotorDirection(elevio.MD_Stop)
+		elevator.Behaviour = elevio.EB_Idle
+	}
+	elevator.Behaviour = prevState
+	elevator.Dirn = prevDirn
+}
+
+func FsmObstruction(a bool){
+
+	if a == true && elevator.Behaviour == elevio.EB_DoorOpen{
+		timer.TimerStart(elevator.Config.DoorOpenDuration)
 	}
 }
