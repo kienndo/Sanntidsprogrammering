@@ -24,7 +24,7 @@ type HRAInput struct {
 
 var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
-
+	LastValidFloor int
 	// Our three elevators
 	Elevator1 = elevio.Elevator{
 		Floor: -1,
@@ -41,7 +41,7 @@ var(
 		States: map[string]HRAElevState{
 			"one": {
 				Behavior:      elevio.EbToString(Elevator1.Behaviour),
-				Floor:         AvoidNegativeFloor(Elevator1), 
+				Floor:         LastValidFloor, 
 				Direction:     elevio.ElevioDirnToString(Elevator1.Dirn),
 				CabRequests:    Elevator1.CabRequests, 
 			},
@@ -49,15 +49,14 @@ var(
 	}
 )
 
-func AvoidNegativeFloor(e elevio.Elevator) int {
+func GetLastValidFloor(ValidFloor int) {
 	
-	if e.Floor == -1{
-		return 1
-	}
-	return e.Floor
+    LastValidFloor = ValidFloor
+	//fmt.Println("VALID:", LastValidFloor)
 }
 
 func CostFunction(){
+	
 	jsonBytes, err := json.Marshal(Input)
     if err != nil {
         fmt.Println("json.Marshal error: ", err)

@@ -27,7 +27,7 @@ func main() {
 	go elevio.PollFloorSensor(drv_floors)
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
-
+	
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
@@ -37,7 +37,7 @@ func main() {
 	//go fsm.FsmStopSignal()
 	
 	for {
-
+		
 		select {
 		case a := <-drv_buttons:
 			// Button signal
@@ -45,10 +45,12 @@ func main() {
 			
 			master.WhichButton(a)
 			master.CostFunction()
+	
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
-
+			
 		case a := <-drv_floors:
 			// Floor signal
+			master.GetLastValidFloor(a)
 			fmt.Printf("%+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 
