@@ -1,5 +1,4 @@
-package backup
-
+package main
 import (
 	"fmt"
 	"net"
@@ -7,7 +6,6 @@ import (
 	"os/exec"
 	"strconv"
 	"time"
-	//udp "Sanntidsprogrammering/Elevator/udp"
 	"encoding/json"
 )
 
@@ -59,7 +57,7 @@ func RunPrimary() {
 	}
 }
 
-func UDPreceive(){ // FLYTT TIL UDP
+func UDPreceive(){
 	addr := net.UDPAddr{
 		Port: UDPPort,
 		IP:   net.ParseIP("UDPPort"),
@@ -125,7 +123,7 @@ func StartBackupProcess() {
 	}
 }
 
-func SendUDPMessage(host string, port int, message string) { //FLYTT TIL UDP
+func SendUDPMessage(host string, port int, message string) {
 
 	// Create a UDP connection
 	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", host, port))
@@ -151,12 +149,12 @@ func SendUDPMessage(host string, port int, message string) { //FLYTT TIL UDP
 	}
 }
 
-// func main() {
-// 	// Check if the program is run as a backup process
-// 	args := os.Args[1:]
-// 	if len(args) > 0 && args[0] == "backup" {
-// 		RunBackup()
-// 	} else {
-// 		RunPrimary()
-// 	}
-// }
+func main() {
+	// Check if the program is run as a backup process
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "backup" {
+		RunBackup()
+	} else {
+		RunPrimary()
+	}
+}

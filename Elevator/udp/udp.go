@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
-	"time"
+	//"time"
 	
 )
 
@@ -41,7 +41,7 @@ func AliveSend() {
 		}
 	}
 
-	time.Sleep(time.Second)
+	//time.Sleep(time.Second)
 
 }
 
