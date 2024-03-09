@@ -154,3 +154,4 @@ func FsmObstruction(a bool){
 		timer.TimerStart(elevator.Config.DoorOpenDuration)
 	}
 }
+

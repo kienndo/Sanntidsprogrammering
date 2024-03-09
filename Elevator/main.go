@@ -3,6 +3,8 @@ package main
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	master "Sanntidsprogrammering/Elevator/master"
+
 	//requests "Sanntidsprogrammering/Elevator/requests"
 	"fmt"
 )
@@ -19,6 +21,8 @@ func main() {
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
+	drv_hall := make(chan elevio.ButtonEvent)
+	drv_cab := make(chan elevio.ButtonEvent)
 
 	go elevio.PollButtons(drv_buttons)
 	go elevio.PollFloorSensor(drv_floors)
@@ -38,7 +42,9 @@ func main() {
 		case a := <-drv_buttons:
 			// Button signal
 			fmt.Printf("%+v\n", a)
-			//io.SetButtonLamp(a.Button, a.Floor, true) hva er dette
+			
+			master.WhichButton(a, drv_hall, drv_cab)
+			fmt.Println("KOM SEG UT")
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 
 		case a := <-drv_floors:
@@ -54,15 +60,12 @@ func main() {
 			fsm.ObstructionIndicator = a
 			go fsm.FsmObstruction(fsm.ObstructionIndicator)
 			
-
 		case a := <-drv_stop: 
 			// Does not keep going after the button is not pushed on
 			//Stop button signal
 			fmt.Printf("%+v\n", a)
-			//
 			go fsm.FsmStopSignal(a) 
-			
-			
+				
 		}
 	}
 
