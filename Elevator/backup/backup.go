@@ -2,7 +2,6 @@ package backup
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"time"
 )
@@ -43,9 +42,7 @@ func RunPrimary() {
 
 // Sjekker om primary er aktiv ved å sjekke om filen er oppdatert nylig
 func PrimaryIsActive() bool {
-	info, _ := os.Stat("status.txt") //TA UT VERDIER 
-
-	return time.Since(info.ModTime()) < 2*CheckPeriod
+	return OurData.PrimaryAlive == true
 }
 
 func StartBackupProcess() {
@@ -70,13 +67,3 @@ func RunBackup() {
 		time.Sleep(CheckPeriod)
 	}
 }
-
-// func main() {
-// 	// Check if the program is run as a backup process
-// 	args := os.Args[1:]
-// 	if len(args) > 0 && args[0] == "backup" {
-// 		RunBackup()
-// 	} else {
-// 		RunPrimary()
-// 	}
-// }

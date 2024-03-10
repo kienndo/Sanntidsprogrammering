@@ -5,7 +5,8 @@ import (
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
-	//backup "Sanntidsprogrammering/Elevator/backup"
+	backup "Sanntidsprogrammering/Elevator/backup"
+	"os"
 )
 
 func main() {
@@ -19,22 +20,26 @@ func main() {
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
-	drv_stop := make(chan bool)
 	
-
 	go elevio.PollButtons(drv_buttons)
 	go elevio.PollFloorSensor(drv_floors)
 	go elevio.PollObstructionSwitch(drv_obstr)
-	go elevio.PollStopButton(drv_stop)
 	
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
-	//fmt.Println(master.Input)
+	
+	backup.StartPrimary()
 
 	fsm.InitLights()
-	//backup.RunBackup()
-	//backup.RunPrimary()
+
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "backup" {
+		backup.RunBackup()
+	} else {
+		backup.RunPrimary()
+	}
+
 	
 	for {
 		
