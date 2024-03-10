@@ -2,13 +2,9 @@ package backup
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"os/exec"
-	"strconv"
 	"time"
-	//udp "Sanntidsprogrammering/Elevator/udp"
-	"encoding/json"
 )
 
 const (
@@ -32,86 +28,22 @@ var (
 
 func RunPrimary() {
 	fmt.Println("Running as Primary")
-	counter := 1
 
-	// Får tak i siste counter-verdi
-	if data, err := os.ReadFile("status.txt"); err == nil {
-		if val, err := strconv.Atoi(string(data)); err == nil {
-			counter = val
-		}
-	}
+	//MÅ FÅ TAK I
 	StartBackupProcess()
 
 	go UDPreceive()
 	
-	for {
-		fmt.Println(counter)
-		counter++
-
-		if counter == 5 {
-			counter = 1
-		}
-
 		// Sende counter-verdi til backup
-		SendUDPMessage("localhost", UDPPort, strconv.Itoa(counter))
+	SendUDPMessage("localhost", UDPPort, OurData)
 
-		time.Sleep(1 * time.Second)
-	}
+	time.Sleep(1 * time.Second)
 }
 
-func UDPreceive(){ // FLYTT TIL UDP
-	addr := net.UDPAddr{
-		Port: UDPPort,
-		IP:   net.ParseIP("UDPPort"),
-	}
-
-	conn, err := net.ListenUDP("udp", &addr)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer conn.Close()
-
-	// Buffer to store received data
-	buffer := make([]byte, 1024)
-
-	// Receive data
-	n, _, err := conn.ReadFromUDP(buffer)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Deserialize the JSON back into a struct
-	var receivedStruct Data
-	err = json.Unmarshal(buffer[:n], &receivedStruct)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-   
-   fmt.Printf("Received: %+v\n", receivedStruct)
-
-
-}
-
-func RunBackup() {
-	fmt.Println("Running as Backup")
-	for {
-		if PrimaryIsActive() {
-			fmt.Println("Primary is active")
-		} else {
-			fmt.Println("Primary is inactive, taking over.") //Kjører en ny primary dersom den merker at det ikke er noen aktiv primary
-			RunPrimary()
-			return
-		}
-		time.Sleep(CheckPeriod)
-	}
-}
 
 // Sjekker om primary er aktiv ved å sjekke om filen er oppdatert nylig
 func PrimaryIsActive() bool {
-	info, _ := os.Stat("status.txt")
+	info, _ := os.Stat("status.txt") //TA UT VERDIER 
 
 	return time.Since(info.ModTime()) < 2*CheckPeriod
 }
@@ -125,29 +57,17 @@ func StartBackupProcess() {
 	}
 }
 
-func SendUDPMessage(host string, port int, message string) { //FLYTT TIL UDP
-
-	// Create a UDP connection
-	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", host, port))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer conn.Close()
-
-
-	// Serialize the struct to JSON
-	data, err := json.Marshal(OurData)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Send the serialized struct over UDP
-	_, err = conn.Write(data)
-	if err != nil {
-		fmt.Println(err)
-		return
+func RunBackup() {
+	fmt.Println("Running as Backup")
+	for {
+		if PrimaryIsActive() {
+			fmt.Println("Primary is active")
+		} else {
+			fmt.Println("Primary is inactive, taking over.") 
+			RunPrimary()
+			return
+		}
+		time.Sleep(CheckPeriod)
 	}
 }
 
