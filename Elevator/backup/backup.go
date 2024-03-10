@@ -60,9 +60,9 @@ func RunPrimary() {
     for {
         fmt.Println(OurData.LastNumber)
 
-        os.WriteFile("status.txt", serializeData(OurData), 0666)
+        os.WriteFile("status.txt", SerializeData(OurData), 0666)
 
-        sendUDPMessage("localhost", udpPort, OurData)
+        SendUDPMessage("localhost", udpPort, OurData)
 
         time.Sleep(1 * time.Second)
     }
@@ -71,7 +71,7 @@ func RunPrimary() {
 func RunBackup() {
     fmt.Println("Running as Backup")
     for {
-        if primaryIsActive() {
+        if PrimaryIsActive() {
             fmt.Println("Primary is active")
         } else {
             fmt.Println("Primary is inactive, taking over.")
