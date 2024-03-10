@@ -1,83 +1,139 @@
 package main
 
 import (
-	"fmt"
-	"os/exec"
-	"time"
-	udp "Sanntidsprogrammering/Elevator/backup"
-	"os"
+    "encoding/json"
+    "fmt"
+    "net"
+    "os"
+    "os/exec"
+    "time"
 )
 
 const (
-	UDPPort     = 8000 // UDP port
-	CheckPeriod = 1 * time.Second
+    udpPort     = 8000 // UDP port
+    checkPeriod = 1 * time.Second
 )
 
-// Define the struct
 type Data struct {
-	PrimaryAlive bool
-	LastNumber   int
+    PrimaryAlive bool `json:"primary_alive"`
+    LastNumber   int  `json:"last_number"`
 }
 
 var (
-	counter int
-	OurData = Data{
-		PrimaryAlive: true, 
-		LastNumber: counter,
-	}
+    OurData = Data{
+        PrimaryAlive: true,
+        LastNumber:   1,
+    }
 )
 
-func RunPrimary() {
-	fmt.Println("Running as Primary")
+func runPrimary() {
+    fmt.Println("Running as Primary")
 
-	//MÅ FÅ TAK I
-	StartBackupProcess()
+    if data, err := os.ReadFile("status.txt"); err == nil {
+        if err := json.Unmarshal(data, &OurData); err != nil {
+            fmt.Println("Error unmarshaling JSON:", err)
+        }
+    }
 
-	go udp.UDPreceive()
-	
-	for{	// Sende counter-verdi til backup
-	udp.SendUDPMessage("localhost", UDPPort, udp.OurData)
-	}
+    startBackupProcess()
 
-	time.Sleep(1 * time.Second)
+    go func() {
+        udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", udpPort))
+
+        conn, _ := net.ListenUDP("udp", udpAddr)
+
+        defer conn.Close()
+
+        buf := make([]byte, 1024)
+        for {
+            n, _, _ := conn.ReadFromUDP(buf)
+
+            var receivedData Data
+            if err := json.Unmarshal(buf[:n], &receivedData); err != nil {
+                fmt.Println("Error unmarshaling JSON:", err)
+                continue
+            }
+
+            fmt.Println("Received message from backup:", receivedData)
+        }
+    }()
+
+    for {
+        fmt.Println(OurData.LastNumber)
+
+        os.WriteFile("status.txt", serializeData(OurData), 0666)
+
+        sendUDPMessage("localhost", udpPort, OurData)
+
+        time.Sleep(1 * time.Second)
+    }
 }
 
-
-// Sjekker om primary er aktiv ved å sjekke om filen er oppdatert nylig
-func PrimaryIsActive() bool {
-	return OurData.PrimaryAlive == true
+func runBackup() {
+    fmt.Println("Running as Backup")
+    for {
+        if primaryIsActive() {
+            fmt.Println("Primary is active")
+        } else {
+            fmt.Println("Primary is inactive, taking over.")
+            runPrimary()
+            return
+        }
+        time.Sleep(checkPeriod)
+    }
 }
 
-func StartBackupProcess() {
-	// Åpner en ny terminal og kjører backup-prosessen
-	cmd := exec.Command("gnome-terminal", "--", "go", "run", "main.go", "backup")
+func primaryIsActive() bool {
+    info, _ := os.Stat("status.txt")
 
-	if err := cmd.Start(); err != nil {
-		fmt.Println("Failed to start backup process:", err)
-	}
+    return time.Since(info.ModTime()) < 2*checkPeriod
 }
 
-func RunBackup() {
-	fmt.Println("Running as Backup")
-	for {
-		if PrimaryIsActive() {
-			fmt.Println("Primary is active")
-		} else {
-			fmt.Println("Primary is inactive, taking over.") 
-			RunPrimary()
-			return
-		}
-		time.Sleep(CheckPeriod)
-	}
+func startBackupProcess() {
+    cmd := exec.Command("gnome-terminal", "--", "go", "run", "main.go", "backup")
+
+    if err := cmd.Start(); err != nil {
+        fmt.Println("Failed to start backup process:", err)
+    }
 }
 
+func sendUDPMessage(host string, port int, data Data) {
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Println("Error marshaling JSON:", err)
+        return
+    }
+
+    udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, port))
+
+    conn, err := net.DialUDP("udp", nil, udpAddr)
+    if err != nil {
+        fmt.Println("Error dialing UDP:", err)
+        return
+    }
+    defer conn.Close()
+
+    _, err = conn.Write(jsonData)
+    if err != nil {
+        fmt.Println("Error sending UDP message:", err)
+        return
+    }
+}
+
+func serializeData(data Data) []byte {
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Println("Error marshaling JSON:", err)
+        return nil
+    }
+    return jsonData
+}
 
 func main() {
-	// Check if the program is run as a backup process
-	args := os.Args[1:]
-	if len(args) > 0 && args[0] == "backup" {
-		RunBackup()
-	} else {
-		RunPrimary()
-	}
+    args := os.Args[1:]
+    if len(args) > 0 && args[0] == "backup" {
+        runBackup()
+    } else {
+        runPrimary()
+    }
 }

@@ -6,7 +6,6 @@ import (
 	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
 	backup "Sanntidsprogrammering/Elevator/backup"
-	"os"
 	//localip "Sanntidsprogrammering/Elevator/network/localip"
 )
 
@@ -34,14 +33,6 @@ func main() {
 
 	fsm.InitLights()
 
-	args := os.Args[1:]
-	if len(args) > 0 && args[0] == "backup" {
-		backup.RunBackup()
-	} else {
-		backup.RunPrimary()
-	}
-
-	
 	for {
 		
 		select {

@@ -1,1 +1,1 @@
-4
+{"primary_alive":true,"last_number":1}
