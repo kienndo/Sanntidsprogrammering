@@ -136,7 +136,6 @@ func checkArgs(chans ...interface{}) {
 	}
 }
 
-
 func checkTypeRecursive(val reflect.Type, offsets []int){
 	switch val.Kind() {
 	case reflect.Complex64, reflect.Complex128, reflect.Chan, reflect.Func, reflect.UnsafePointer:
@@ -188,10 +187,9 @@ func RunBroadcast() {
 	go Receiver(16569, helloRx) // Mottar HelloMsg fra alle enheter på nettverket via UDP (fra bcast.go)
 
 	go func() {
-		helloMsg := fsm.RunningElevator
 		for {
-			helloMsg.Floor+=10 // Inkrementerer Iter med 1 hvert sekund
-			helloTx <- helloMsg //Sender helloMsg til helloTx-kanalen hvert sekund
+			ElevatorMessage := fsm.RunningElevator 
+			helloTx <- ElevatorMessage //Sender helloMsg til helloTx-kanalen hvert sekund
 			time.Sleep(1 * time.Second) //Venter 1 sekund
 		}
 	}()
