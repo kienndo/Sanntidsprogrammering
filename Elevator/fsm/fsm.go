@@ -126,22 +126,13 @@ func FsmOnDoorTimeout() {
 func CheckForTimeout() {
 	for {
 		if timer.TimerTimedOut() != 0 {
+			for ObstructionIndicator == true{
+				FsmObstruction(ObstructionIndicator)
+			}
 			timer.TimerStop()
 			FsmOnDoorTimeout()
 		}
 	}
-}
-
-func FsmStopSignal(a bool){
-	var prevState elevio.ElevatorBehaviour = elevator.Behaviour
-	var prevDirn elevio.MotorDirection = elevator.Dirn
-	
-	for a == true {
-		elevio.SetMotorDirection(elevio.MD_Stop)
-		elevator.Behaviour = elevio.EB_Idle
-	}
-	elevator.Behaviour = prevState
-	elevator.Dirn = prevDirn
 }
 
 func FsmObstruction(a bool){

@@ -1,13 +1,12 @@
-package udp
+package backup
 
 import (
 	"encoding/gob"
 	"fmt"
 	"net"
-	"time"
-	
 )
 
+// VIL EGENTLIG HA DENNE FILEN I EN EGEN MAPPE, HVORDAN
 const StatePort = "20011"
 const DeletePort = "20012"
 const AlivePort = "20013"
@@ -41,9 +40,4 @@ func AliveSend() {
 		}
 	}
 
-	time.Sleep(time.Second)
-
-
 }
-
-
