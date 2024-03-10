@@ -25,7 +25,7 @@ func StartPrimary() {
     rand.Seed(time.Now().UnixNano())
 
     // Generate a random duration between 0 and 10 seconds
-    randomDuration := time.Millisecond * time.Duration(rand.Intn(10000))
+    randomDuration := time.Millisecond * time.Duration(rand.Intn(10))
 
 	buffer := make([]byte, 1024)
 

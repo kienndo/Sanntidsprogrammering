@@ -5,6 +5,7 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	"os/exec"
 	"encoding/json"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
 )
 
 const hraExecutable = "/home/student/Sanntidsprogrammering/Elevator/hall_request_assigner"
@@ -26,21 +27,14 @@ var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
 	// Our three elevators
-	Elevator1 = elevio.Elevator{
-		Floor: -1,
-		Dirn:  elevio.MD_Stop,
-		Behaviour: elevio.EB_Idle,
-		CabRequests: []bool {true, true, false, false},
-	}
+	Elevator1 = fsm.RunningElevator
 	
-	Elevator2 elevio.Elevator
-	Elevator3 elevio.Elevator
 
 	Input = HRAInput{
 		HallRequests: 	[][2]bool {{false, false}, {true, true}, {false, false}, {false, true}}, //må lage array for bare hallrequest
 		States: map[string]HRAElevState{
 			"one": {
-				Behavior:      elevio.EbToString(Elevator1.Behaviour),
+				Behavior:      elevio.EbToString(fsm.RunningElevator.Behaviour),
 				Floor:         LastValidFloor, 
 				Direction:     elevio.ElevioDirnToString(Elevator1.Dirn),
 				CabRequests:    Elevator1.CabRequests, 
