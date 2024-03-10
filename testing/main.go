@@ -1,44 +1,35 @@
 package main
 
 import (
-    "encoding/json"
-    "fmt"
-    "net"
-    "os"
-    "os/exec"
-    "time"
+	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
+	elevio "Sanntidsprogrammering/Elevator/elevio"
+	"encoding/json"
+	"fmt"
+	"net"
+	"os"
+	"os/exec"
+	"time"
 )
 
 const (
-    udpPort     = 8000 // UDP port
+    udpPort     = 8000 // UDP port - må bytte port for mottaker(annen heis)
     checkPeriod = 1 * time.Second
 )
 
-type Data struct {
-    PrimaryAlive bool `json:"primary_alive"`
-    LastNumber   int  `json:"last_number"`
-}
 
-var (
-    OurData = Data{
-        PrimaryAlive: true,
-        LastNumber:   1,
-    }
-)
-
-func runPrimary() {
+func RunPrimary() {
     fmt.Println("Running as Primary")
 
     if data, err := os.ReadFile("status.txt"); err == nil {
-        if err := json.Unmarshal(data, &OurData); err != nil {
+        if err := json.Unmarshal(data, &costfunctions.Elevator1); err != nil {
             fmt.Println("Error unmarshaling JSON:", err)
         }
     }
 
-    startBackupProcess()
+    StartBackupProcess()
 
     go func() {
-        udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", udpPort))
+        udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", udpPort)) 
 
         conn, _ := net.ListenUDP("udp", udpAddr)
 
@@ -48,7 +39,7 @@ func runPrimary() {
         for {
             n, _, _ := conn.ReadFromUDP(buf)
 
-            var receivedData Data
+            var receivedData elevio.Elevator
             if err := json.Unmarshal(buf[:n], &receivedData); err != nil {
                 fmt.Println("Error unmarshaling JSON:", err)
                 continue
@@ -59,37 +50,37 @@ func runPrimary() {
     }()
 
     for {
-        fmt.Println(OurData.LastNumber)
+        fmt.Println(costfunctions.Elevator1)
 
-        os.WriteFile("status.txt", serializeData(OurData), 0666)
+        os.WriteFile("status.txt", SerializeData(costfunctions.Elevator1), 0666)
 
-        sendUDPMessage("localhost", udpPort, OurData)
+        SendUDPMessage("localhost", udpPort, costfunctions.Elevator1)
 
         time.Sleep(1 * time.Second)
     }
 }
 
-func runBackup() {
+func RunBackup() {
     fmt.Println("Running as Backup")
     for {
-        if primaryIsActive() {
+        if PrimaryIsActive() {
             fmt.Println("Primary is active")
         } else {
             fmt.Println("Primary is inactive, taking over.")
-            runPrimary()
+            RunPrimary()
             return
         }
         time.Sleep(checkPeriod)
     }
 }
 
-func primaryIsActive() bool {
+func PrimaryIsActive() bool {
     info, _ := os.Stat("status.txt")
 
     return time.Since(info.ModTime()) < 2*checkPeriod
 }
 
-func startBackupProcess() {
+func StartBackupProcess() {
     cmd := exec.Command("gnome-terminal", "--", "go", "run", "main.go", "backup")
 
     if err := cmd.Start(); err != nil {
@@ -97,7 +88,7 @@ func startBackupProcess() {
     }
 }
 
-func sendUDPMessage(host string, port int, data Data) {
+func SendUDPMessage(host string, port int, data elevio.Elevator) {
     jsonData, err := json.Marshal(data)
     if err != nil {
         fmt.Println("Error marshaling JSON:", err)
@@ -120,7 +111,7 @@ func sendUDPMessage(host string, port int, data Data) {
     }
 }
 
-func serializeData(data Data) []byte {
+func SerializeData(data elevio.Elevator) []byte {
     jsonData, err := json.Marshal(data)
     if err != nil {
         fmt.Println("Error marshaling JSON:", err)
@@ -132,8 +123,8 @@ func serializeData(data Data) []byte {
 func main() {
     args := os.Args[1:]
     if len(args) > 0 && args[0] == "backup" {
-        runBackup()
+        RunBackup()
     } else {
-        runPrimary()
+        RunPrimary()
     }
 }
