@@ -82,12 +82,15 @@ func Receiver(port int, chans ...interface{}) {
 			continue
 		} 
 		v := reflect.New(reflect.TypeOf(ch).Elem()) //lager en ny verdi av elementtypen til kanalen og lagrer i v 
-		json.Unmarshal(ttj.JSON, v.Interface()) //konverterer JSON til elementtypen til kanalen og lagrer i v
+		json.Unmarshal(ttj.JSON, v.Interface())//konverterer JSON til elementtypen til kanalen og lagrer i v
 		reflect.Select([]reflect.SelectCase{{ //velger en case fra selectCases
 			Dir:  reflect.SelectSend, //SelectSend : case Chan <- Send (sender data til kanal)
 			Chan: reflect.ValueOf(ch), //lagrer verdien av kanalen i Chan
 			Send: reflect.Indirect(v), //lagrer verdien av v i Send 
 		}})
+
+		fsm.RunningElevator = v.Elem().Interface().(elevio.Elevator)
+		fmt.Println("DETTE ER:", fsm.RunningElevator)
 	}
 }
 
