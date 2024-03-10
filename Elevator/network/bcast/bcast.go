@@ -12,6 +12,7 @@ import (
 	localip "Sanntidsprogrammering/Elevator/network/localip"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
 
 )
 
@@ -158,7 +159,6 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 	}
 }
 
-
 func RunBroadcast() {
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer") //flag.StringVar lagrer verdien av id i id variabelen 
@@ -188,14 +188,9 @@ func RunBroadcast() {
 	go Receiver(16569, helloRx) // Mottar HelloMsg fra alle enheter på nettverket via UDP (fra bcast.go)
 
 	go func() {
-		helloMsg := elevio.Elevator{
-			Floor: -1,
-			Dirn:  elevio.MD_Stop,
-			Behaviour: elevio.EB_Idle,
-			CabRequests: []bool {true, true, false, false},
-		} 
+		helloMsg := fsm.RunningElevator
 		for {
-			helloMsg.Floor++ // Inkrementerer Iter med 1 hvert sekund
+			helloMsg.Floor+=10 // Inkrementerer Iter med 1 hvert sekund
 			helloTx <- helloMsg //Sender helloMsg til helloTx-kanalen hvert sekund
 			time.Sleep(1 * time.Second) //Venter 1 sekund
 		}
