@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 )
 
-const hraExecutable = "/home/student/Sanntidsprogrammering/Elevator/hall_request_assigner"
+const hraExecutable = "costfunctions/hall_request_assigner_mac"
 
 type HRAElevState struct {
     Behavior    string      `json:"behaviour"`
