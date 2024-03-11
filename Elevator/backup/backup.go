@@ -24,30 +24,15 @@ var(
 func RunPrimary() {
     fmt.Println("Running as Primary")
     
-    ChanAliveRX := make(chan bool)
     go PrimaryIsActive()
 	
 	go bcast.Transmitter(16564, ChanAliveTX)
-	go bcast.Receiver(16564, ChanAliveRX)
-
-    IfPrimaryAlive := <-ChanAliveRX
 
     if data, err := os.ReadFile("status.txt"); err == nil {
         if err := json.Unmarshal(data, &costfunctions.Elevator1); err != nil {
             fmt.Println("Error unmarshaling JSON:", err)
         }
     }
-
-    if IfPrimaryAlive {
-
-        StartBackupProcess()
-
-    } else {
-
-
-    }
-
-    
 
     go func() {
         udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", udpPort)) 
@@ -83,12 +68,16 @@ func RunPrimary() {
 
 func RunBackup() {
     fmt.Println("Running as Backup")
+    ChanAliveRX := make(chan bool)
+    go bcast.Receiver(16564, ChanAliveRX)
+    IfPrimaryAlive := <-ChanAliveRX
+
     for {
-        if PrimaryIsActive() {
+        if IfPrimaryAlive {
             fmt.Println("Primary is active")
         } else {
             fmt.Println("Primary is inactive, taking over.")
-            RunPrimary()
+            //RunPrimary()
             return
         }
         time.Sleep(checkPeriod)

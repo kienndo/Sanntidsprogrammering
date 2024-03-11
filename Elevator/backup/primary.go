@@ -36,8 +36,9 @@ func StartPrimary() {
 	if err != nil {
 		fmt.Println("No message recieved, becoming primary")
 		conn.Close()
-
 		go RunPrimary()
 		return
+	} else{
+		go RunBackup()
 	}
 }
