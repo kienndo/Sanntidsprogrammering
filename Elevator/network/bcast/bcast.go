@@ -13,6 +13,7 @@ import (
 	peers "Sanntidsprogrammering/Elevator/network/peers"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	//backup "Sanntidsprogrammering/Elevator/backup"
 
 )
 
@@ -171,6 +172,7 @@ func RunBroadcast() {
 	go Transmitter(16563, ElevatorMessageTX) //16569
 	go Receiver(16563, ElevatorMessageRX)
 
+
 	go func() {
 		for {
 			ElevatorMessage := fsm.RunningElevator 
@@ -193,4 +195,3 @@ func RunBroadcast() {
 		}
 	}
 }
-

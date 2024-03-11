@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"time"
+    bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
 const (
@@ -16,9 +17,20 @@ const (
     checkPeriod = 1 * time.Second
 )
 
-//
+var(
+    ChanAliveTX = make(chan bool)
+)
+
 func RunPrimary() {
     fmt.Println("Running as Primary")
+    
+    ChanAliveRX := make(chan bool)
+    go PrimaryIsActive()
+	
+	go bcast.Transmitter(16564, ChanAliveTX)
+	go bcast.Receiver(16564, ChanAliveRX)
+
+    IfPrimaryAlive := <-ChanAliveRX
 
     if data, err := os.ReadFile("status.txt"); err == nil {
         if err := json.Unmarshal(data, &costfunctions.Elevator1); err != nil {
@@ -26,7 +38,16 @@ func RunPrimary() {
         }
     }
 
-    StartBackupProcess()
+    if IfPrimaryAlive {
+
+        StartBackupProcess()
+
+    } else {
+
+
+    }
+
+    
 
     go func() {
         udpAddr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", udpPort)) 
@@ -77,7 +98,10 @@ func RunBackup() {
 func PrimaryIsActive() bool {
     info, _ := os.Stat("status.txt")
 
-    return time.Since(info.ModTime()) < 2*checkPeriod
+	PrimaryAlive := time.Since(info.ModTime()) < 2*checkPeriod
+	ChanAliveTX <- PrimaryAlive
+
+    return PrimaryAlive
 }
 
 func StartBackupProcess() {

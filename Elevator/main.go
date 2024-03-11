@@ -17,13 +17,13 @@ func main() {
 
 	go fsm.CheckForTimeout()
 
-	drv_buttons := make(chan elevio.ButtonEvent)
-	drv_floors := make(chan int)
-	drv_obstr := make(chan bool)
+	chanButtons := make(chan elevio.ButtonEvent)
+	chanFloors := make(chan int)
+	chanObstr := make(chan bool)
 	
-	go elevio.PollButtons(drv_buttons)
-	go elevio.PollFloorSensor(drv_floors)
-	go elevio.PollObstructionSwitch(drv_obstr)
+	go elevio.PollButtons(chanButtons)
+	go elevio.PollFloorSensor(chanFloors)
+	go elevio.PollObstructionSwitch(chanObstr)
 
 	go bcast.RunBroadcast()
 	
@@ -32,13 +32,14 @@ func main() {
 	}
 	
 	backup.StartPrimary()
+	
 
 	fsm.InitLights()
 
 	for {
 		
 		select {
-		case a := <-drv_buttons:
+		case a := <-chanButtons:
 			fmt.Printf("Order: %+v\n", a)
 			
 			costfunctions.WhichButton(a)
@@ -46,14 +47,14 @@ func main() {
 	
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 			
-		case a := <-drv_floors:
+		case a := <-chanFloors:
 
 			costfunctions.GetLastValidFloor(a)
 			fmt.Printf("Floor: %+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 			
 
-		case a := <-drv_obstr:
+		case a := <-chanObstr:
 			fmt.Printf("Obstructing: %+v\n", a)
 			fsm.ObstructionIndicator = a
 				

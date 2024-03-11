@@ -32,13 +32,12 @@ func StartPrimary() {
     // Set the read deadline from the current time plus the random duration
     err = conn.SetReadDeadline(time.Now().Add(randomDuration))
 	_,_, err = conn.ReadFromUDP(buffer)
-    if err != nil {
-	    fmt.Println("Failed to set read deadline:", err)
-	}
-
+   
 	if err != nil {
 		fmt.Println("No message recieved, becoming primary")
 		conn.Close()
+
+		go RunPrimary()
 		return
 	}
 }
