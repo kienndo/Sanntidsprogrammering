@@ -16,7 +16,7 @@ const (
     checkPeriod = 1 * time.Second
 )
 
-
+//
 func RunPrimary() {
     fmt.Println("Running as Primary")
 

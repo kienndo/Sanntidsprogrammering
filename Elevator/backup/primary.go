@@ -41,7 +41,4 @@ func StartPrimary() {
 		conn.Close()
 		return
 	}
-
-
-
 }

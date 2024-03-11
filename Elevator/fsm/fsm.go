@@ -6,6 +6,7 @@ import (
 	timer "Sanntidsprogrammering/Elevator/timer"
 )
 
+// Initialization
 var (
 	RunningElevator = elevio.Elevator{
 		Floor: -1,
@@ -23,10 +24,11 @@ var (
 	ObstructionIndicator bool
 )
 
+// Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
 func SetAllLights(es elevio.Elevator) {
 	for floor := 0; floor < elevio.N_FLOORS; floor++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
-			if es.Request[floor][btn] != false {
+			if es.Request[floor][btn] {
 				elevio.SetButtonLamp(elevio.ButtonType(btn), floor, true)
 			} else {
 				elevio.SetButtonLamp(elevio.ButtonType(btn), floor, false)
@@ -53,7 +55,7 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 		} else {
 			if btn_type == 2 {
-				//Btn_type += elevatornumber
+				//Btn_type += elevatornumber HÆÆÆ
 			} else {
 				//Update master matrix
 			}
@@ -126,7 +128,7 @@ func FsmOnDoorTimeout() {
 func CheckForTimeout() {
 	for {
 		if timer.TimerTimedOut() != 0 {
-			for ObstructionIndicator == true{
+			for ObstructionIndicator{
 				FsmObstruction(ObstructionIndicator)
 			}
 			timer.TimerStop()
@@ -137,7 +139,7 @@ func CheckForTimeout() {
 
 func FsmObstruction(a bool){
 
-	if a == true && RunningElevator.Behaviour == elevio.EB_DoorOpen{
+	if a && RunningElevator.Behaviour == elevio.EB_DoorOpen{
 		timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 	}
 }

@@ -31,7 +31,7 @@ func main() {
 		fsm.FsmOnInitBetweenFloors()
 	}
 	
-	backup.StartPrimary() // bruker for lang tid noen ganger
+	backup.StartPrimary()
 
 	fsm.InitLights()
 
@@ -39,7 +39,6 @@ func main() {
 		
 		select {
 		case a := <-drv_buttons:
-			// Button signal
 			fmt.Printf("Order: %+v\n", a)
 			
 			costfunctions.WhichButton(a)
@@ -48,16 +47,13 @@ func main() {
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 			
 		case a := <-drv_floors:
-			// Floor signal
-			//helloMsg.Floor = a
-			//helloTx <- helloMsg
+
 			costfunctions.GetLastValidFloor(a)
 			fmt.Printf("Floor: %+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 			
 
 		case a := <-drv_obstr:
-			//Obstruction
 			fmt.Printf("Obstructing: %+v\n", a)
 			fsm.ObstructionIndicator = a
 				

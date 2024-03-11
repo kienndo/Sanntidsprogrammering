@@ -6,7 +6,6 @@ import (
 	"net"
 )
 
-// VIL EGENTLIG HA DENNE FILEN I EN EGEN MAPPE, HVORDAN
 const StatePort = "20011"
 const DeletePort = "20012"
 const AlivePort = "20013"

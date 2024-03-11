@@ -1,8 +1,9 @@
 package timer
 
 import (
-	"time"
+	
 	"fmt"
+	"time"
 )
 
 var (
@@ -14,6 +15,7 @@ func TimerStart(duration float64) {
 	TimerEndTime = float64(time.Now().Unix()) + duration
 	TimerActive = 1
 	fmt.Println("Timer started")
+
 }
 
 func TimerStop() {
