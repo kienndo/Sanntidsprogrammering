@@ -188,6 +188,6 @@ func SetToPrimary() {
 
         fmt.Println("Doing primarystuff")
 
-        time.Sleep(1*time.Millisecond)
+        time.Sleep(1*time.Second)
     }
 }
