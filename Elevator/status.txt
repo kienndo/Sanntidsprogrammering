@@ -1,1 +1,1 @@
-{"Floor":-1,"Dirn":0,"Behaviour":0,"Request":[[false,false,false],[false,false,false],[false,false,false],[false,false,false]],"CabRequests":null,"Config":{"ClearRequestVariant":0,"DoorOpenDuration":3}}
+{"Floor":0,"Dirn":-1,"Behaviour":1,"Request":[[true,false,false],[false,true,false],[false,false,false],[false,true,false]],"CabRequests":null,"Config":{"ClearRequestVariant":0,"DoorOpenDuration":3}}

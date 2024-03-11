@@ -26,7 +26,6 @@ type HRAInput struct {
 var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
-	// Our three elevators
 	HRAElevator = fsm.RunningElevator
 	
 
@@ -34,10 +33,10 @@ var(
 		HallRequests: 	[][2]bool {{false, false}, {true, true}, {false, false}, {false, true}}, //må lage array for bare hallrequest
 		States: map[string]HRAElevState{
 			"one": {
-				Behavior:      elevio.EbToString(fsm.RunningElevator.Behaviour),
+				Behavior:      elevio.EbToString(HRAElevator.Behaviour),
 				Floor:         LastValidFloor, 
-				Direction:     elevio.ElevioDirnToString(fsm.RunningElevator.Dirn),
-				CabRequests:   fsm.RunningElevator.CabRequests, 
+				Direction:     elevio.ElevioDirnToString(HRAElevator.Dirn),
+				CabRequests:   HRAElevator.CabRequests, 
 			},
 		},
 	}

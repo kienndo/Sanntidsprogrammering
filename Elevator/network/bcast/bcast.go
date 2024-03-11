@@ -180,17 +180,17 @@ func RunBroadcast() {
 		}
 	}()
 
-	fmt.Println("Started")
-	for {
-		select {
-		case p := <-peerUpdateCh: 
-			fmt.Printf("Slave update:\n") 
-			fmt.Printf("  Slaves:    %q\n", p.Peers)
-			fmt.Printf("  New:      %q\n", p.New) 
-			fmt.Printf("  Lost:     %q\n", p.Lost) 
+	// fmt.Println("Started")
+	// for {
+	// 	select {
+	// 	case p := <-peerUpdateCh: 
+	// 		fmt.Printf("Slave update:\n") 
+	// 		fmt.Printf("  Slaves:    %q\n", p.Peers)
+	// 		fmt.Printf("  New:      %q\n", p.New) 
+	// 		fmt.Printf("  Lost:     %q\n", p.Lost) 
 
-		case a := <-ElevatorMessageRX: 
-			fmt.Printf("Received: %#v\n", a) 
-		}
-	}
+	// 	case a := <-ElevatorMessageRX: 
+	// 		fmt.Printf("Received: %#v\n", a) 
+	// 	}
+	// }
 }
