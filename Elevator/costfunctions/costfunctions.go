@@ -27,7 +27,7 @@ var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
 	// Our three elevators
-	Elevator1 = fsm.RunningElevator
+	HRAElevator = fsm.RunningElevator
 	
 
 	Input = HRAInput{
@@ -36,8 +36,8 @@ var(
 			"one": {
 				Behavior:      elevio.EbToString(fsm.RunningElevator.Behaviour),
 				Floor:         LastValidFloor, 
-				Direction:     elevio.ElevioDirnToString(Elevator1.Dirn),
-				CabRequests:    Elevator1.CabRequests, 
+				Direction:     elevio.ElevioDirnToString(fsm.RunningElevator.Dirn),
+				CabRequests:   fsm.RunningElevator.CabRequests, 
 			},
 		},
 	}
@@ -46,7 +46,6 @@ var(
 func GetLastValidFloor(ValidFloor int) {
 	
     LastValidFloor = ValidFloor
-	//fmt.Println("VALID:", LastValidFloor)
 }
 
 func CostFunction(){
@@ -83,7 +82,7 @@ func WhichButton(btnEvent elevio.ButtonEvent) {
 		switch {
 		case btnEvent.Button == elevio.BT_Cab:
 			fmt.Println("CAB", btnEvent)
-			Elevator1.CabRequests[btnEvent.Floor] = true;
+			HRAElevator.CabRequests[btnEvent.Floor] = true;
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
 			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;

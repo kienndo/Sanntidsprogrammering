@@ -5,9 +5,12 @@ import(
 	"fmt"
 	"time"
 	"math/rand"
+	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
 func StartPrimary() {
+	go PrimaryIsActive()
+	go bcast.Transmitter(156476, ChanAliveTX)
 
 	addr, err := net.ResolveUDPAddr("udp", "localhost:15657")
 	if err != nil {
@@ -25,20 +28,26 @@ func StartPrimary() {
     rand.Seed(time.Now().UnixNano())
 
     // Generate a random duration between 0 and 10 seconds
-    randomDuration := time.Millisecond * time.Duration(rand.Intn(10))
+    // randomDuration := time.Millisecond * time.Duration(rand.Intn(10))
 
-	buffer := make([]byte, 1024)
+	// buffer := make([]byte, 1024)
 
-    // Set the read deadline from the current time plus the random duration
-    err = conn.SetReadDeadline(time.Now().Add(randomDuration))
-	_,_, err = conn.ReadFromUDP(buffer)
-   
-	if err != nil {
+    // // Set the read deadline from the current time plus the random duration
+    // // err = conn.SetReadDeadline(time.Now().Add(randomDuration))
+	// // _,_, err = conn.ReadFromUDP(buffer)
+	ChanAliveRX := make(chan bool)
+	
+    go bcast.Receiver(156476, ChanAliveRX)
+	
+    IfPrimaryAlive := <-ChanAliveRX
+	
+
+	if IfPrimaryAlive { 
 		fmt.Println("No message recieved, becoming primary")
 		conn.Close()
 		go RunPrimary()
 		return
 	} else{
-		go RunBackup()
+		go RunBackup(IfPrimaryAlive)
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"time"
-    bcast "Sanntidsprogrammering/Elevator/network/bcast"
+    //bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
 const (
@@ -23,13 +23,10 @@ var(
 
 func RunPrimary() {
     fmt.Println("Running as Primary")
-    
-    go PrimaryIsActive()
 	
-	go bcast.Transmitter(16564, ChanAliveTX)
 
     if data, err := os.ReadFile("status.txt"); err == nil {
-        if err := json.Unmarshal(data, &costfunctions.Elevator1); err != nil {
+        if err := json.Unmarshal(data, &costfunctions.HRAElevator); err != nil {
             fmt.Println("Error unmarshaling JSON:", err)
         }
     }
@@ -51,27 +48,24 @@ func RunPrimary() {
                 continue
             }
 
-            fmt.Println("Received message from backup:", receivedData)
+           // fmt.Println("Received message from backup:", receivedData)
         }
     }()
 
     for {
-        fmt.Println(costfunctions.Elevator1)
+        //fmt.Println(costfunctions.HRAElevator)
 
-        os.WriteFile("status.txt", SerializeData(costfunctions.Elevator1), 0666)
+        os.WriteFile("status.txt", SerializeData(costfunctions.HRAElevator), 0666)
 
-        SendUDPMessage("localhost", udpPort, costfunctions.Elevator1)
+        SendUDPMessage("localhost", udpPort, costfunctions.HRAElevator)
 
         time.Sleep(1 * time.Second)
     }
 }
 
-func RunBackup() {
+func RunBackup(IfPrimaryAlive bool) {
     fmt.Println("Running as Backup")
-    ChanAliveRX := make(chan bool)
-    go bcast.Receiver(16564, ChanAliveRX)
-    IfPrimaryAlive := <-ChanAliveRX
-
+    
     for {
         if IfPrimaryAlive {
             fmt.Println("Primary is active")

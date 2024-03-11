@@ -16,7 +16,7 @@ import (
 	//backup "Sanntidsprogrammering/Elevator/backup"
 
 )
-
+var ID string
 const bufSize = 1024
 
 func Transmitter(port int, chans ...interface{}) {
@@ -147,23 +147,22 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 }
 
 func RunBroadcast() {
-	var id string
-	flag.StringVar(&id, "id", "", "id of this peer") 
+	flag.StringVar(&ID, "id", "", "id of this peer") 
 	flag.Parse() 
 
-	if id == "" { 
+	if ID == "" { 
 		localIP, err := localip.LocalIP() 
 		if err != nil {
 			fmt.Println(err)
 			localIP = "DISCONNECTED"
 		}
-		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
+		ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
 	}
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
 
 	peerTxEnable := make(chan bool) 
-	go peers.Transmitter(15663, id, peerTxEnable)
+	go peers.Transmitter(156463, ID, peerTxEnable)
 	go peers.Receiver(156463, peerUpdateCh) //156476
 
 	ElevatorMessageTX := make(chan elevio.Elevator)
@@ -175,7 +174,7 @@ func RunBroadcast() {
 
 	go func() {
 		for {
-			ElevatorMessage := fsm.RunningElevator 
+			ElevatorMessage := fsm.RunningElevator //oppdaterer seg ikke 
 			ElevatorMessageTX <- ElevatorMessage
 			time.Sleep(1 * time.Second)
 		}

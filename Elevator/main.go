@@ -6,7 +6,7 @@ import (
 	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
 	backup "Sanntidsprogrammering/Elevator/backup"
-	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 	go elevio.PollFloorSensor(chanFloors)
 	go elevio.PollObstructionSwitch(chanObstr)
 
-	//go bcast.RunBroadcast()
+	go bcast.RunBroadcast()
 	
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
