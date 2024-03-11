@@ -6,11 +6,22 @@ import(
 	"time"
 	"math/rand"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
+	"os"
+	peers "Sanntidsprogrammering/Elevator/network/peers"
 )
 
 func StartPrimary() {
 	go PrimaryIsActive()
-	go bcast.Transmitter(156476, ChanAliveTX)
+	if bcast.ID == "" { 
+		localIP, err := localip.LocalIP() 
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
+		}
+		bcast.ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
+	}
+	go peers.Transmitter(156476, bcast.ID, ChanAliveTX)
 
 	addr, err := net.ResolveUDPAddr("udp", "localhost:15657")
 	if err != nil {
