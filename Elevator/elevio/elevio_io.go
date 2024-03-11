@@ -75,7 +75,7 @@ func Init(addr string, numFloors int) {
 		fmt.Println("Driver already initialized!")
 		return
 	}
-	_numFloors = numFloors
+	_numFloors = numFloors 
 	_mtx = sync.Mutex{}
 	var err error
 	_conn, err = net.Dial("tcp", addr)
@@ -162,7 +162,7 @@ func GetButton(button ButtonType, floor int) bool {
 	return toBool(a[1])
 }
 
-
+// GetFloor returns the last floor the elevator passed
 func GetFloor() int {
 	a := read([4]byte{7, 0, 0, 0})
 	if a[1] != 0 {
