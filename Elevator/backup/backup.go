@@ -160,6 +160,8 @@ func ListenForPrimary() {
 
         fmt.Println("Doing backupstuff")
 
+        time.Sleep(2*time.Second)
+
     }
 
 
