@@ -159,7 +159,7 @@ func SendState(state HRAElevState, addr string) {
 	for {
 
 	// Send states til master
-	conn, err := net.Dial("udp","10.100.23.255:"+addr)
+	conn, err := net.Dial("udp","10.100.23.255"+addr)
 	if err != nil {
 		fmt.Println("Failed to dial UDP")
 		return
@@ -223,7 +223,7 @@ func RecievingState(address string,state *HRAElevState) {
 
 func UpdateStates() {
 
-	RecievingState(":295001", &State1)
+	RecievingState(":29501", &State1)
 	RecievingState(":29502", &State2)
 	
 }
