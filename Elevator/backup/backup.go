@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"time"
+    costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
   
 )
 
@@ -26,6 +27,9 @@ func ListenForPrimary() {
     fmt.Println("Backup started")
 
     timer := time.NewTimer(10*time.Second)
+
+    // Begynner å sende states til primary
+    costfunctions.ChooseConnection()
 
     for {
         select {
@@ -66,6 +70,8 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
+        go costfunctions.UpdateStates()
+
 
         time.Sleep(1*time.Second)
     }
