@@ -159,6 +159,7 @@ func ListenForPrimary() {
         select {
         case <-timer.C:
             fmt.Println("Timeout expired, becoming primary")
+            return
         default:
             conn.SetReadDeadline(time.Now().Add(10 * time.Second))
             _, _, err := conn.ReadFrom(buffer)
