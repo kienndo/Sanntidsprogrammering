@@ -36,8 +36,8 @@ var(
 
 	CurrentState = HRAElevState {
 
-		Behavior:      elevio.EbToString(HRAElevator.Behaviour),
-		Floor:         LastValidFloor, 
+		Behavior:      "moving",//elevio.EbToString(HRAElevator.Behaviour),
+		Floor:         1, //LastValidFloor, 
 		Direction:     elevio.ElevioDirnToString(HRAElevator.Dirn),
 		CabRequests:   HRAElevator.CabRequests, 
 	}
@@ -183,7 +183,7 @@ func SendState(state HRAElevState, addr string) {
 	if err != nil {
 		fmt.Println("UDP connection funker ikke :(")
 	}
-	time.Sleep(1*time.Second)
+	//time.Sleep(1*time.Second)
  }
 }
 
