@@ -161,7 +161,7 @@ func SendState(state HRAElevState, addr string) {
 	// Send states til master
 	conn, err := net.Dial("udp","10.100.23.255"+addr)
 	if err != nil {
-		fmt.Println("Failed to dial UDP")
+		fmt.Println("Failed to dial UDP %vn", err)
 		return
 	}
 	fmt.Println("kæser moren din kien")
