@@ -164,6 +164,7 @@ func SendState(state HRAElevState, addr string) {
 		fmt.Println("Failed to dial UDP")
 		return
 	}
+	fmt.Println("kæser moren din kien")
 	defer conn.Close()
 
 	jsonData, err := json.Marshal(state)
