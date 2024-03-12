@@ -29,7 +29,7 @@ func ListenForPrimary() {
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
-    costfunctions.ChooseConnection()
+    go costfunctions.ChooseConnection()
 
     for {
         select {
