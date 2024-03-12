@@ -2,8 +2,10 @@ package requests
 
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
+	"sync"
 )
 
+var FsmMutex = sync.Mutex{}
 // Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
 
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) int {
@@ -68,6 +70,8 @@ func ChooseDirection(e elevio.Elevator) elevio.DirnBehaviourPair {
 }
 
 func IfFloorAbove(e elevio.Elevator) int {
+	FsmMutex.Lock()
+	defer FsmMutex.Unlock()
 	for f := e.Floor + 1; f < elevio.N_FLOORS; f++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
 			if e.Request[f][btn] {
@@ -79,6 +83,8 @@ func IfFloorAbove(e elevio.Elevator) int {
 }
 
 func IfFloorBelow(e elevio.Elevator) int {
+	FsmMutex.Lock()
+	defer FsmMutex.Unlock()
 	for f := 0; f < e.Floor; f++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
 			if e.Request[f][btn] {
@@ -90,6 +96,8 @@ func IfFloorBelow(e elevio.Elevator) int {
 }
 
 func IfFloorHere(e elevio.Elevator) int {
+	FsmMutex.Lock()
+	defer FsmMutex.Unlock()
 	for btn := 0; btn < elevio.N_BUTTONS; btn++ {
 		if e.Request[e.Floor][btn] {
 			return 1
@@ -99,7 +107,8 @@ func IfFloorHere(e elevio.Elevator) int {
 }
 
 func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
-
+	FsmMutex.Lock()
+	defer FsmMutex.Unlock()
 	e.Request[e.Floor][elevio.BT_Cab] = false
 
 	switch e.Dirn {
@@ -121,6 +130,8 @@ func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
 }
 
 func ShouldStop(e elevio.Elevator) int {
+	FsmMutex.Lock()
+	defer FsmMutex.Unlock()
 	switch e.Dirn {
 	case elevio.MD_Down:
 		if e.Request[e.Floor][elevio.BT_HallDown] {
