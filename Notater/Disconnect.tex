@@ -1,22 +1,72 @@
 MÅ GJØRE FØRST:
-- Lage en configfil med alle set things som døråpnetid, porter ++
+- Lage en oversikt over levende heiser
 - Legge inn mutex på funksjoner
+    Requests
+    Basically sjekk om det er noe flere heiser skal bruke, for eksempel channels??? bakcup - masterhallrequests! må initialisere denne!
+- Husk at masterhallrequests skal dele felles lys, mutexlock den arrayen
+------------------------Sette over på andre pcen-------------------------
+JSON-fil med config og legge til 'json'
+Redigere README
+
 
 ------------------------------ Disconnect ----------------------------------
 
 En heis disconnecter:
 
 Poller hvor lenge det har gått siden sist melding fra heisen (Sjekker hvor lenge siden sist heisen sendte en struct over)
+var LivingElevators map[string]elevio.Elevator - fjerner fra map når heisen ikke lever, men bare så den har oversikt over hvem som lever
+
 func ElevatorReassignOrders() {
     for {
         select {
         case <-time.After(2 * time.Second):
             if time.Since(lastMessage) > 2*time.Second { // men burde finne ut om det er en disconnect eller om den har kræsjet, så kanskje polle enda en gang
-                // Vi har en disconnect
+                // Vi har en disconnect!
                 // Hente hallrequests tilbake til master fra forrige sendte melding
-                // Cabrequests må bare bli stående, er vel en dude inni heisen som ikke har det bra, men synd trist leit
+                // Cabrequests må bare bli stående, er vel en dude inni heisen som ikke har det bra, men synd trist leit, men vi 
+                        //men vi får vel velge om vi ønsker å slette eller beholde
             }
         }
+    }
+}
+
+-------------------------JSON------------------------
+type Config struct {
+    Port1 string            'json:"port1"'
+    Port2 string            'json:"port2"'
+    Port3 string            'json:"port3"'
+    DoorOpenDuration int   'json:"doorOpenDuration"'
+    N_FLOORS int            'json:"nFloors"'
+    N_BUTTONS int          'json:"nButtons"'
+} 
+
+
+func(){
+
+Config := Config{
+    Port1: "15657", // eller bare = den som står i koden
+    Port2: "15658",
+    Port3: "15659",
+    DoorOpenDuration: 3,
+    N_FLOORS: 4,
+    N_BUTTONS: 3,
+}
+
+    // Open the configuration file
+    file, err := os.Open("config.json")
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+    defer file.Close()
+
+    // Decode the JSON file into a Config struct
+    var config Config
+    decoder := json.NewDecoder(file)
+    err = decoder.Decode(&config)
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
     }
 }
 
