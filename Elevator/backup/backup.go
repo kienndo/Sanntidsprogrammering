@@ -151,18 +151,42 @@ func ListenForPrimary() {
 
     fmt.Println("Backup started")
 
-    // fortsetter å loope helt til primary dør
+    //timer
+    timer := time.NewTimer(10*time.Second)
+    //addr, _ := net.ResolveUDPAddr("udp",":29500")
+
     for {
-        _, _, err := conn.ReadFrom(buffer)
-        if err != nil {
-            return
+        select {
+        case <-timer.C:
+            fmt.Println("Timeout expired, becoming primary")
+        default:
+            conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+            _, _, err := conn.ReadFrom(buffer)
+            if err != nil {
+                continue
+            }
+            fmt.Println("Message received, restart timer")
+            if !timer.Stop() {
+                <-timer.C
+            }
+            timer.Reset(10 * time.Second)
         }
-
-        fmt.Println("Doing backupstuff")
-
-        time.Sleep(2*time.Second)
-
     }
+
+    // fortsetter å loope helt til primary dør
+    // for {
+    //     _, _, err := conn.ReadFrom(buffer)
+    //     if err != nil {
+    //         return
+    //     }
+
+    //     fmt.Println("Doing backupstuff")
+
+    //     time.Sleep(2*time.Second)
+
+    // }
+
+
 
 
 }
