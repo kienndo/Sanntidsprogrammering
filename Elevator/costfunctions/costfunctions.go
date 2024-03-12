@@ -25,8 +25,6 @@ type HRAInput struct {
 	States 			map[string]HRAElevState		 `json:"states"`
 }
 
-
-
 var(
 
 	MasterHallRequests [elevio.N_FLOORS][2]bool
@@ -44,26 +42,28 @@ var(
 		CabRequests:   HRAElevator.CabRequests, 
 	}
 	
-
-	Input = HRAInput{
-		HallRequests: 	[][2]bool {{false, false}, {true, true}, {false, false}, {false, true}}, //må lage array for bare hallrequest
-		States: map[string]HRAElevState{
-			"one": {
-				Behavior:      elevio.EbToString(HRAElevator.Behaviour),
-				Floor:         LastValidFloor, 
-				Direction:     elevio.ElevioDirnToString(HRAElevator.Dirn),
-				CabRequests:   HRAElevator.CabRequests, 
-			},
-		},
-	}
 )
+
+func InitMasterHallRequests(){
+	for i := 0; i<elevio.N_FLOORS; i++{
+		for j:= 0; j<2; j++{
+			MasterHallRequests[i][j] = false
+		}
+	}
+}
 
 func SetLastValidFloor(ValidFloor int) {
 	LastValidFloor = ValidFloor
 }
 
 func CostFunction(){
-	
+
+	var Input = HRAInput{
+		HallRequests: 	MasterHallRequests[:],
+		States: map[string]HRAElevState{
+			"one": CurrentState,
+		},
+	}
 	jsonBytes, err := json.Marshal(Input)
     if err != nil {
         fmt.Println("json.Marshal error: ", err)
@@ -108,9 +108,7 @@ func ButtonIdentifyer(btnEvent elevio.ButtonEvent) {
 		}
 	}
 
-
 func ChooseConnection() {
-
 	// Sjekker om channel 1 er ledig
 	conn, err := net.ListenPacket("udp",":29503")
 	if err != nil {

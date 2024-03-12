@@ -14,6 +14,7 @@ func main() {
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
+	costfunctions.InitMasterHallRequests()
 
 	go fsm.CheckForTimeout()
 
@@ -31,7 +32,7 @@ func main() {
 		fsm.FsmOnInitBetweenFloors()
 	}
 
-	backup.ListenForPrimary()
+	go backup.ListenForPrimary()
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
@@ -43,7 +44,7 @@ func main() {
 			fmt.Printf("Order: %+v\n", a)
 			
 			//costfunctions.WhichButton(a) //vil ikke fungere med cab nå???
-			//costfunctions.CostFunction() //printer ut noe stygt nå
+			costfunctions.CostFunction() 
 	
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 			
