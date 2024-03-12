@@ -136,6 +136,8 @@ func ChooseConnection() {
 		go SendState(CurrentState, ":29502")
 
 	}
+
+	time.Sleep(1*time.Millisecond)
 }
 
 func ChannelTaken() {
