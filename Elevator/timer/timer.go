@@ -1,5 +1,7 @@
 package timer
 
+// Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo:
+
 import (
 	
 	"fmt"

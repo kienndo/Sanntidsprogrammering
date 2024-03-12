@@ -17,7 +17,6 @@ type HRAElevState struct {
     CabRequests []bool      `json:"cabRequests"`
 }
 
-
 type HRAInput struct {
 	HallRequests 	[][2]bool					`json:"hallRequests"`
 	States 			map[string]HRAElevState		 `json:"states"`
@@ -42,9 +41,8 @@ var(
 	}
 )
 
-func GetLastValidFloor(ValidFloor int) {
-	
-    LastValidFloor = ValidFloor
+func SetLastValidFloor(ValidFloor int) {
+	LastValidFloor = ValidFloor
 }
 
 func CostFunction(){
@@ -76,7 +74,7 @@ func CostFunction(){
 
 }	
 
-func WhichButton(btnEvent elevio.ButtonEvent) {
+func ButtonIdentifyer(btnEvent elevio.ButtonEvent) {
 
 		switch {
 		case btnEvent.Button == elevio.BT_Cab:

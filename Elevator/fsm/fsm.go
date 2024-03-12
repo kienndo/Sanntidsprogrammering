@@ -26,6 +26,7 @@ var (
 )
 
 // Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
+
 func SetAllLights(es elevio.Elevator) {
 	for floor := 0; floor < elevio.N_FLOORS; floor++ {
 		for btn := 0; btn < elevio.N_BUTTONS; btn++ {
@@ -38,7 +39,7 @@ func SetAllLights(es elevio.Elevator) {
 	}
 }
 
-func InitLights() {
+func InitializeLights() {
 	elevio.SetDoorOpenLamp(false)
 	SetAllLights(RunningElevator)
 }
@@ -55,8 +56,8 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 		if requests.ShouldClearImmediately(RunningElevator, btn_Floor, btn_type) != 0 {
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 		} else {
-			if btn_type == 2 {
-				//Btn_type += elevatornumber HÆÆÆ
+			if btn_type == 2 { //cab vs hall
+				//Btn_type += elevatornumber 
 			} else {
 				//Update master matrix
 			}
@@ -139,7 +140,6 @@ func CheckForTimeout() {
 }
 
 func FsmObstruction(a bool){
-
 	if a && RunningElevator.Behaviour == elevio.EB_DoorOpen{
 		timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 	}

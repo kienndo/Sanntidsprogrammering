@@ -21,7 +21,7 @@ func RunPrimary() {
     fmt.Println("Running as Primary")
 
     if data, err := os.ReadFile("status.txt"); err == nil {
-        if err := json.Unmarshal(data, &costfunctions.Elevator1); err != nil {
+        if err := json.Unmarshal(data, &costfunctions.HRAElevator); err != nil {
             fmt.Println("Error unmarshaling JSON:", err)
         }
     }
@@ -50,11 +50,11 @@ func RunPrimary() {
     }()
 
     for {
-        fmt.Println(costfunctions.Elevator1)
+        fmt.Println(costfunctions.HRAElevator)
 
-        os.WriteFile("status.txt", SerializeData(costfunctions.Elevator1), 0666)
+        os.WriteFile("status.txt", SerializeData(costfunctions.HRAElevator), 0666)
 
-        SendUDPMessage("localhost", udpPort, costfunctions.Elevator1)
+        SendUDPMessage("localhost", udpPort, costfunctions.HRAElevator)
 
         time.Sleep(1 * time.Second)
     }

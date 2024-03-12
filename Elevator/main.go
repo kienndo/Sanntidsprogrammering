@@ -20,8 +20,6 @@ func main() {
 	chanButtons := make(chan elevio.ButtonEvent)
 	chanFloors := make(chan int)
 	chanObstr := make(chan bool)
-	//chanAliveRX := make(chan bool)
-	//chanAliveTX := make(chan bool)
 	
 	go elevio.PollButtons(chanButtons)
 	go elevio.PollFloorSensor(chanFloors)
@@ -32,30 +30,13 @@ func main() {
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
-	
-	//backup.StartPrimary()
-	//go func(){
-	//bcast.Receiver(16564, chanAliveRX)
-	//chanAliveTX <-backup.PrimaryIsActive()
-	//bcast.Transmitter(16564, chanAliveTX)
 
-    // if backup.PrimaryIsActive() {
-    //     backup.RunPrimary()
-		
-    // } else {
-    //     backup.RunBackup()
-    // }
-	// }()
-
-	// go rutine som sjekker for primary
 	backup.ListenForPrimary()
 	go backup.SetToPrimary()
 
-	
+	fsm.InitializeLights()
 
-	fsm.InitLights()
-
-	for {
+	for { // Put into function later?
 		
 		select {
 		case a := <-chanButtons:
@@ -68,7 +49,7 @@ func main() {
 			
 		case a := <-chanFloors:
 
-			costfunctions.GetLastValidFloor(a)
+			costfunctions.SetLastValidFloor(a)
 			fmt.Printf("Floor: %+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 			
