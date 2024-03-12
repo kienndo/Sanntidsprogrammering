@@ -127,13 +127,13 @@ func ChooseConnection() {
 		// Channel 1
 		fmt.Println("Sending to channel 1")
 		go ChannelTaken()
-		go SendState(CurrentState, "29501")
+		go SendState(CurrentState, ":29501")
 
 	} else {
 
 		// Channel 2
 		fmt.Println("sending to channel 2")
-		go SendState(CurrentState, "29502")
+		go SendState(CurrentState, ":29502")
 
 	}
 }
