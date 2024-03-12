@@ -158,8 +158,6 @@ func ChannelTaken() {
 
 func SendState(state HRAElevState, addr string) {
 
-	for {
-
 	// Send states til master
 	conn, err := net.Dial("udp","10.100.23.255"+addr)
 	if err != nil {
@@ -169,16 +167,23 @@ func SendState(state HRAElevState, addr string) {
 	fmt.Println("kæser moren din kien")
 	defer conn.Close()
 
-	jsonData, err := json.Marshal(state)
-	if err != nil {
-		fmt.Println("failed to serialize data")
-		return
-	}
+	for {
 
-	_, err = conn.Write(jsonData)
+	// jsonData, err := json.Marshal(state)
+	// if err != nil {
+	// 	fmt.Println("failed to serialize data")
+	// 	return
+	// }
+
+	// _, err = conn.Write(jsonData)
+	// if err != nil {
+	// 	fmt.Println("failed to send state")
+	// 	return
+	// }
+
+	_, err := conn.Write([]byte("UDP connection funker på tide å kæse moren til kien"))
 	if err != nil {
-		fmt.Println("failed to send state")
-		return
+		fmt.Println("UDP connection funker ikke :(")
 	}
  }
 }
@@ -206,21 +211,25 @@ func RecievingState(address string,state *HRAElevState) {
 			fmt.Println("failed to read")
 			continue
 		}
-		var newState HRAElevState
-		err = json.Unmarshal(buffer[:n],&newState)
-		if err != nil {
-			fmt.Println("failed to deserialize")
-			continue
-		}
-		
-		fmt.Println()
 
-		mutex.Lock()
-		*state = newState
-		mutex.Unlock()
+		recievedString := string(buffer[:n])
+		fmt.Println(recievedString)
+		// var newState HRAElevState
+		// err = json.Unmarshal(buffer[:n],&newState)
+		// if err != nil {
+		// 	fmt.Println("failed to deserialize")
+		// 	continue
+		// }
+		
+		// fmt.Println()
+
+		// mutex.Lock()
+		// *state = newState
+		// mutex.Unlock()
 
 
 	}
+
 
 }
 
