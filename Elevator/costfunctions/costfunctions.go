@@ -183,6 +183,7 @@ func SendState(state HRAElevState, addr string) {
 	if err != nil {
 		fmt.Println("UDP connection funker ikke :(")
 	}
+	time.Sleep(1*time.Second)
  }
 }
 
