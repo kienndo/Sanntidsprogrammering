@@ -1,0 +1,22 @@
+MÅ GJØRE FØRST:
+- Lage en configfil med alle set things som døråpnetid, porter ++
+- Legge inn mutex på funksjoner
+
+------------------------------ Disconnect ----------------------------------
+
+En heis disconnecter:
+
+Poller hvor lenge det har gått siden sist melding fra heisen (Sjekker hvor lenge siden sist heisen sendte en struct over)
+func ElevatorReassignOrders() {
+    for {
+        select {
+        case <-time.After(2 * time.Second):
+            if time.Since(lastMessage) > 2*time.Second { // men burde finne ut om det er en disconnect eller om den har kræsjet, så kanskje polle enda en gang
+                // Vi har en disconnect
+                // Hente hallrequests tilbake til master fra forrige sendte melding
+                // Cabrequests må bare bli stående, er vel en dude inni heisen som ikke har det bra, men synd trist leit
+            }
+        }
+    }
+}
+
