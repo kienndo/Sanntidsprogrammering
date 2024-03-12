@@ -220,10 +220,11 @@ func RecievingState(address string,state *HRAElevState) {
 			continue
 		}
 		
-		fmt.Println(newState)
+		
 
 		mutex.Lock()
 		*state = newState
+		fmt.Println(newState)
 		mutex.Unlock()
 
 
