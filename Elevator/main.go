@@ -48,7 +48,7 @@ func main() {
 	// }()
 
 	// go rutine som sjekker for primary
-	go backup.ListenForPrimary()
+	backup.ListenForPrimary()
 	go backup.SetToPrimary()
 
 	
