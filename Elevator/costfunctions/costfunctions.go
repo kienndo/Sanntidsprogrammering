@@ -235,7 +235,6 @@ func RecievingState(address string,state *HRAElevState) {
 
 func UpdateStates() {
 
-	//Må oppdatere inni HRAElevState, men dette er jo peker?
 	fmt.Println("MasterHallRequests", MasterHallRequests)
 	select {
 	case UpdateHallRequests := <-ChanHallRequests:

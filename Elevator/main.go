@@ -39,6 +39,8 @@ func main() {
 
 	fsm.InitializeLights()
 
+	go costfunctions.UpdateStates()
+
 
 	for { // Put into function later?
 		
