@@ -7,6 +7,7 @@ import (
 	"fmt"
 	backup "Sanntidsprogrammering/Elevator/backup"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 	chanButtons := make(chan elevio.ButtonEvent)
 	chanFloors := make(chan int)
 	chanObstr := make(chan bool)
+	//elevatorUnavailable := make(chan bool)
 	
 	go elevio.PollButtons(chanButtons)
 	go elevio.PollFloorSensor(chanFloors)

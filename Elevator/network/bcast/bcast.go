@@ -14,7 +14,7 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	//backup "Sanntidsprogrammering/Elevator/backup"
-
+	
 )
 var ID string
 const bufSize = 1024

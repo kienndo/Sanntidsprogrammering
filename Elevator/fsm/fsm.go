@@ -5,7 +5,7 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
-	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
+	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
 // Initialization
