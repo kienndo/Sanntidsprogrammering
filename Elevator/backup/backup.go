@@ -29,7 +29,7 @@ func ListenForPrimary() {
 
     // Begynner å sende states til primary
     go costfunctions.ChooseConnection()
-    go costfunctions.ChooseConnection()
+    go costfunctions.MasterRecieve()
     
 
     for {
