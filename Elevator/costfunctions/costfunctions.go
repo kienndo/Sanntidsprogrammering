@@ -202,7 +202,7 @@ func RecievingState(address string,state *elevio.Elevator) {
 
 func MasterRecieve(){
 	
-	for{
+	for {
 	select{
 	case a := <- ChanElevator1:
 		fmt.Println("MASTER")
