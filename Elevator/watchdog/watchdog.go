@@ -4,17 +4,19 @@ import (
 	"time"
 )
 
+
 //const seconds = soemthing
-func watchdogTimer (seconds int, elevatorUnavailable chan bool) {
+func WatchdogFunc(seconds int, ElevatorUnavailable chan bool) {
 	//timer! etter vi ikke har fått et signal 
 	//ny timer, hvis dden kobler seg på etter 2 sek eks var det bare en liten disconnect
 	watchdogTimer := time.NewTimer(time.Duration(seconds) * time.Second)
 	for {
 		select {
 			case <- watchdogTimer.C:
-				elevatorUnavailable <- true
+				ElevatorUnavailable <- true
 				//send melding til master at denne heisen er død
 				watchdogTimer.Reset(time.Duration(seconds) * time.Second) //restart timer
+			default: //
 		}
 	}
 	//nettverksfeil, ikke en disconnect, 

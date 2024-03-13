@@ -6,6 +6,7 @@ import (
 	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
 	backup "Sanntidsprogrammering/Elevator/backup"
+	watchdog "Sanntidsprogrammering/Elevator/watchdog"
 	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	ChanObstr := make(chan bool)
 	ChanHallRequests := make(chan elevio.ButtonEvent)
 	ChanCabRequests := make(chan elevio.ButtonEvent)
-	//elevatorUnavailable := make(chan bool)
+	ElevatorUnavailable := make(chan bool) //Til watchdog
 
 
 	
@@ -43,6 +44,8 @@ func main() {
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
+
+	go watchdog.WatchdogFunc(5, ElevatorUnavailable) //satt inn et random tall
 
 	for { // Put into function later?
 		

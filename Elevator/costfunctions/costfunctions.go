@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 	"runtime"
+	watchdog "Sanntidsprogrammering/Elevator/watchdog"
 )
 
 
@@ -232,5 +233,17 @@ func MasterRecieve(){
 		CostFunction(Input2)
 	}
 }
+}
+func ReassignOrders(ElevatorUnavailable chan bool) { //tenkte å bruke denne til å sende melding til master at denne heisen er død, visste ikke hvordan jeg skulle implementere i funksjonen over
+	for {
+		select {
+		case <- ElevatorUnavailable: //hvis heisen er død 
+			//send melding til master at denne heisen er død
+			deadState := HRAElevState{ //dette gir ikke mening, vet ikke hvordan jeg løser det
+				Behavior: elevio.EbToString("EB_Dead"), //Elevator = 💀 men dette føler jeg ikke går
+
+			
+		}
+	}
 }
 

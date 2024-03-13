@@ -61,9 +61,10 @@ const (
 
 type ElevatorBehaviour int
 const (
-	EB_Idle     ElevatorBehaviour = 0
-	EB_DoorOpen                   = 1
-	EB_Moving                     = 2
+	EB_Idle     ElevatorBehaviour 	= 0
+	EB_DoorOpen                   	= 1
+	EB_Moving                     	= 2
+	EB_Dead							= 3 //Elevator = 💀
 )
 
 type ButtonEvent struct {
@@ -235,6 +236,8 @@ func EbToString(eb ElevatorBehaviour) string {
 		return "doorOpen"
 	case EB_Moving:
 		return "moving"
+	case EB_Dead:
+		return "dead"
 	default:
 		return "undefined"
 	}
