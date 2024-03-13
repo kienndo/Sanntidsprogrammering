@@ -36,7 +36,7 @@ var(
 
 	CurrentState = HRAElevState {
 
-		Behavior:      elevio.EbToString(HRAElevator.Behaviour),
+		Behavior:      "moving", //elevio.EbToString(HRAElevator.Behaviour),
 		Floor:         1, //LastValidFloor, 
 		Direction:     elevio.ElevioDirnToString(HRAElevator.Dirn),
 		CabRequests:   HRAElevator.CabRequests, 
