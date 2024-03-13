@@ -198,40 +198,39 @@ func MasterRecieve(){
 	for{
 	select{
 	case a := <- ChanElevator1:
+		State1 := HRAElevState{
+			Behavior: elevio.EbToString(a.Behaviour),
+			Floor: a.Floor,
+			Direction: elevio.ElevioDirnToString(a.Dirn),
+			CabRequests: a.CabRequests[:],
+		}
+		AllElevators["one"] = State1
 		
 		Input1 := HRAInput{
 			HallRequests: MasterHallRequests,
-			States: map[string]HRAElevState{
-			"one": HRAElevState{
-					Behavior: elevio.EbToString(a.Behaviour),
-					Floor: a.Floor,
-					Direction: elevio.ElevioDirnToString(a.Dirn),
-					CabRequests: a.CabRequests[:],
-				},
-			},
+			States: AllElevators,
 		}
 				
 		fmt.Println("INPUT:", Input1)
 		CostFunction(Input1)
 
 	case b := <-ChanElevator2:
+		State2 := HRAElevState{
+			Behavior: elevio.EbToString(b.Behaviour),
+			Floor: b.Floor,
+			Direction: elevio.ElevioDirnToString(b.Dirn),
+			CabRequests: b.CabRequests[:],
+		}
+		AllElevators["one"] = State2
+		
 		Input2 := HRAInput{
 			HallRequests: MasterHallRequests,
-			States: map[string]HRAElevState{
-			"one": HRAElevState{
-					Behavior: elevio.EbToString(b.Behaviour),
-					Floor: b.Floor,
-					Direction: elevio.ElevioDirnToString(b.Dirn),
-					CabRequests: b.CabRequests[:],
-				},
-			},
+			States: AllElevators,
 		}
 				
 		fmt.Println("INPUT:", Input2)
 		CostFunction(Input2)
-
 	}
 }
-
 }
 
