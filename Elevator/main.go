@@ -34,8 +34,8 @@ func main() {
 	go costfunctions.UpdateHallRequests(ChanHallRequests)
 
 	go fsm.CheckForTimeout()
-	go costfunctions.MasterRecieve()
-	go costfunctions.ChooseConnection()
+	//go costfunctions.MasterRecieve()
+	//go costfunctions.ChooseConnection()
 
 	//Primary and backup
 	backup.ListenForPrimary()
