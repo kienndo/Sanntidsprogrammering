@@ -1,22 +1,23 @@
 package bcast
 
 import (
-	"Sanntidsprogrammering/Elevator/network/conn"
-	"encoding/json"
-	"fmt"
-	"net"
-	"reflect"
-	"time"
-	"os"
-	"flag"
-	localip "Sanntidsprogrammering/Elevator/network/localip"
-	peers "Sanntidsprogrammering/Elevator/network/peers"
+	//"Sanntidsprogrammering/Elevator/costfunctions"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	"Sanntidsprogrammering/Elevator/network/conn"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
+	peers "Sanntidsprogrammering/Elevator/network/peers"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"net"
+	"os"
+	"reflect"
+	"time"
 	//backup "Sanntidsprogrammering/Elevator/backup"
-
 )
 var ID string
+var UpdatedElevator elevio.Elevator
 const bufSize = 1024
 
 func Transmitter(port int, chans ...interface{}) {
@@ -81,8 +82,8 @@ func Receiver(port int, chans ...interface{}) {
 			Send: reflect.Indirect(v), 
 		}})
 
-		fsm.RunningElevator = v.Elem().Interface().(elevio.Elevator)
-		fmt.Println("Running Elevator:", fsm.RunningElevator)
+		//fsm.RunningElevator = v.Elem().Interface().(elevio.Elevator)
+		//fmt.Println("Running Elevator:", fsm.RunningElevator)
 		time.Sleep(3)
 	}
 }
@@ -146,7 +147,7 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 	}
 }
 
-func RunBroadcast() {
+func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	flag.StringVar(&ID, "id", "", "id of this peer") 
 	flag.Parse() 
 
@@ -165,32 +166,33 @@ func RunBroadcast() {
 	go peers.Transmitter(156463, ID, peerTxEnable)
 	go peers.Receiver(156463, peerUpdateCh) //156476
 
-	ElevatorMessageTX := make(chan elevio.Elevator)
-	ElevatorMessageRX:= make(chan elevio.Elevator)
-
-	go Transmitter(16563, ElevatorMessageTX) //16569
-	go Receiver(16563, ElevatorMessageRX)
+	ElevatorMessageRX := make(chan elevio.Elevator)
+	go Transmitter(addr, ElevatorMessageTX) //16569
+	go Receiver(addr, ElevatorMessageRX)
 
 
 	go func() {
 		for {
-			ElevatorMessage := fsm.RunningElevator //oppdaterer seg ikke 
+			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
 			time.Sleep(1 * time.Second)
 		}
 	}()
 
-	// fmt.Println("Started")
-	// for {
-	// 	select {
-	// 	case p := <-peerUpdateCh: 
-	// 		fmt.Printf("Slave update:\n") 
-	// 		fmt.Printf("  Slaves:    %q\n", p.Peers)
-	// 		fmt.Printf("  New:      %q\n", p.New) 
-	// 		fmt.Printf("  Lost:     %q\n", p.Lost) 
+	fmt.Println("Started")
+	for {
+		select {
+		case p := <-peerUpdateCh: 
+			fmt.Printf("Slave update:\n") 
+			fmt.Printf("  Slaves:    %q\n", p.Peers)
+			fmt.Printf("  New:      %q\n", p.New) 
+			fmt.Printf("  Lost:     %q\n", p.Lost) 
 
-	// 	case a := <-ElevatorMessageRX: 
-	// 		fmt.Printf("Received: %#v\n", a) 
-	// 	}
-	// }
+		case a := <-ElevatorMessageRX: 
+			fmt.Printf("Received: %#v\n", a)
+			UpdatedElevator = a
+			
+		}
+	}
 }
+
