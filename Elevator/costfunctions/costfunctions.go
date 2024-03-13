@@ -22,18 +22,19 @@ type HRAElevState struct {
 
 type HRAInput struct {
 	HallRequests 	[][2]bool					`json:"hallRequests"`
-	States 			map[string]HRAElevState		 `json:"states"`
+	States 			map[string]HRAElevState		 `json:"states"` //Oppdaterer med hva som er i hver heis, må bare lage tre
 }
 
 var(
 
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
-	HRAElevator = fsm.RunningElevator
 	State1 HRAElevState
 	State2 HRAElevState
 	mutex sync.Mutex
+	HRAElevator = fsm.RunningElevator
 
+	// Blir egentlig en initialisering
 	CurrentState = HRAElevState {
 
 		Behavior:      elevio.EbToString(HRAElevator.Behaviour),
@@ -61,7 +62,8 @@ func CostFunction(){
 	var Input = HRAInput{
 		HallRequests: 	MasterHallRequests[:],
 		States: map[string]HRAElevState{
-			"one": CurrentState,
+			"one": State1,
+			"two": State2,
 		},
 	}
 	jsonBytes, err := json.Marshal(Input)
@@ -220,8 +222,6 @@ func RecievingState(address string,state *HRAElevState) {
 			continue
 		}
 		
-		
-
 		mutex.Lock()
 		*state = newState
 		fmt.Println("UDPSEND", newState)
@@ -230,11 +230,11 @@ func RecievingState(address string,state *HRAElevState) {
 
 
 	}
-
-
 }
 
 func UpdateStates() {
+
+	//Må oppdatere inni HRAElevState
 
 	RecievingState(":29501", &State1)
 	RecievingState(":29502", &State2)
