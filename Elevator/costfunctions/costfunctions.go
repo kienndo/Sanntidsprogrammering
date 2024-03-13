@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"sync"
 	"time"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
 	
 )
 
@@ -293,6 +294,11 @@ func RecieveNewAssignedOrders(){
 			continue
 		}
 
+		for i := 0; i < elevio.N_FLOORS; i++{
+			for j:=0; j<1; j++{
+				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
+			}
+		}
 	}
 
 }
