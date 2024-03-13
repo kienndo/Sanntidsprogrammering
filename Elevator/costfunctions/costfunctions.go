@@ -26,10 +26,6 @@ type HRAInput struct {
 	States 			map[string]HRAElevState		 		`json:"states"`
 }
 
-type HRAOutput struct {			
-	States 			map[string][][2]bool
-}
-
 var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
@@ -45,7 +41,7 @@ var(
 	Address1 int = 1659
 	Address2 int = 1658
 
-	NewOutput HRAOutput
+	HRAOutput map[string][][2]bool
 )
 
 func InitMasterHallRequests(){
@@ -92,10 +88,9 @@ func CostFunction(Input HRAInput){
     for k, v := range *output {
         fmt.Printf("%6v :  %+v\n", k, v)
     }
-	NewOutput := HRAOutput{
-		States: *output,
-	}
-	fmt.Println("NEW OUTPUT:" , NewOutput)
+	HRAOutput = *output
+	
+	fmt.Println("NEW OUTPUT:" , HRAOutput)
 }	
 
 func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
@@ -248,56 +243,56 @@ func MasterRecieve(){
 }
 
 
-// func SendAssignedOrders(){
-// 	// Sends the New hall order to the given IP-address
-// 	for IP, NewHallOrders := range HRAOutput{
-// 		jsonData, err := json.Marshal(NewHallOrders)
-// 		if err != nil {
-// 			return 
-// 		}
+func SendAssignedOrders(){
+	// Sends the New hall order to the given IP-address
+	for IP, NewHallOrders := range HRAOutput{
+		jsonData, err := json.Marshal(NewHallOrders)
+		if err != nil {
+			return 
+		}
 
-// 		udpAddr, err := net.ResolveUDPAddr("udp", IP+":8080") // CHOOSE A NEW PORT
-// 		if err != nil {
-// 			return
-// 		}
+		udpAddr, err := net.ResolveUDPAddr("udp", IP+":8080") // CHOOSE A NEW PORT
+		if err != nil {
+			return
+		}
 
-// 		conn, err := net.DialUDP("udp", nil, udpAddr)
-// 		if err != nil {
-// 			return 
-// 		}
-// 		defer conn.Close()
+		conn, err := net.DialUDP("udp", nil, udpAddr)
+		if err != nil {
+			return 
+		}
+		defer conn.Close()
 
-// 		_, err = conn.Write(jsonData)
-// 		if err != nil {
-// 			return 
-// 		}
-// 	}
-// }
+		_, err = conn.Write(jsonData)
+		if err != nil {
+			return 
+		}
+	}
+}
 
-// func RecieveNewAssignedOrders(){
-// 	addr, err := net.ResolveUDPAddr("udp", ":8080")
-// 	if err != nil{
-// 		fmt.Println("Error resolving UDP address: ", err)
-// 		return
-// 	}
+func RecieveNewAssignedOrders(){
+	addr, err := net.ResolveUDPAddr("udp", ":8080")
+	if err != nil{
+		fmt.Println("Error resolving UDP address: ", err)
+		return
+	}
 
-// 	conn, err := net.ListenUDP("udp", addr)
-// 	if err != nil{
-// 		fmt.Println("Error listening for UDP packets: ", err)
-// 		return
-// 	}
-// 	defer conn.Close()
+	conn, err := net.ListenUDP("udp", addr)
+	if err != nil{
+		fmt.Println("Error listening for UDP packets: ", err)
+		return
+	}
+	defer conn.Close()
 
-// 	for{
-// 		buffer := make([]byte, 1024)
-// 		n, _, _ := conn.ReadFromUDP(buffer)
+	for{
+		buffer := make([]byte, 1024)
+		n, _, _ := conn.ReadFromUDP(buffer)
 
-// 		var AssignedHallRequests [][2]bool
-// 		if err := json.Unmarshal(buffer[:n], &AssignedHallRequests); err != nil {
-// 			fmt.Println("Error decoding JSON", err)
-// 			continue
-// 		}
+		var AssignedHallRequests [][2]bool
+		if err := json.Unmarshal(buffer[:n], &AssignedHallRequests); err != nil {
+			fmt.Println("Error decoding JSON", err)
+			continue
+		}
 
-// 	}
+	}
 
-// }
+}
