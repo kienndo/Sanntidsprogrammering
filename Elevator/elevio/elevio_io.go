@@ -1,4 +1,5 @@
 package elevio
+// Retrieved from https://github.com/TTK4145/driver-go/blob/master/elevio/elevator_io.go
 
 import (
 	"fmt"
@@ -24,7 +25,7 @@ type Elevator struct {
 	Dirn MotorDirection					
 	Behaviour ElevatorBehaviour 		
 	Request [N_FLOORS][N_BUTTONS]bool
-	CabRequests []bool		
+	CabRequests [N_FLOORS]bool		
 	Config Config 						
 }
 
@@ -112,7 +113,7 @@ func PollButtons(receiver chan<- ButtonEvent) {
 		for f := 0; f < _numFloors; f++ {
 			for b := ButtonType(0); b < 3; b++ {
 				v := GetButton(b, f)
-				if v != prev[f][b] && v != false {
+				if v != prev[f][b] && v {
 					receiver <- ButtonEvent{f, ButtonType(b)}
 				}
 				prev[f][b] = v
@@ -162,7 +163,6 @@ func GetButton(button ButtonType, floor int) bool {
 	return toBool(a[1])
 }
 
-// GetFloor returns the last floor the elevator passed
 func GetFloor() int {
 	a := read([4]byte{7, 0, 0, 0})
 	if a[1] != 0 {
@@ -201,7 +201,6 @@ func read(in [4]byte) [4]byte {
 	return out
 }
 
-
 func write(in [4]byte) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
@@ -212,7 +211,6 @@ func write(in [4]byte) {
 	}
 }
 
-
 func toByte(a bool) byte {
 	var b byte = 0
 	if a {
@@ -220,7 +218,6 @@ func toByte(a bool) byte {
 	}
 	return b
 }
-
 
 func toBool(a byte) bool {
 	var b bool = false
@@ -243,7 +240,6 @@ func EbToString(eb ElevatorBehaviour) string {
 	}
 }
 
-//Functions for converting the different enums to strings
 func ElevioDirnToString(d MotorDirection) string {
 	switch d {
 	case MD_Up:

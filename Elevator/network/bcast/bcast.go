@@ -6,35 +6,39 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-)
+	"time"
+	"os"
+	"flag"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
+	peers "Sanntidsprogrammering/Elevator/network/peers"
+	elevio "Sanntidsprogrammering/Elevator/elevio"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
+	//backup "Sanntidsprogrammering/Elevator/backup"
 
+)
+var ID string
 const bufSize = 1024
 
-// Encodes received values from `chans` into type-tagged JSON, then broadcasts
-// it on `port`
-// Funksjonen aksepterer et variabelt antall argumenter (...) av interface{}-type
-// interface{}-type er en tom interface som kan inneholde verdier av hvilken som helst type
-// gyldige verdier kan være Transmitter(8080), Transmitter(8080, kanal1), Transmitter(8080, kanal1, kanal2, "en streng", 42, etObjekt)
 func Transmitter(port int, chans ...interface{}) {
-	checkArgs(chans...) //sjekker at argumentene er gyldige (funksjon lenger ned)
-	typeNames := make([]string, len(chans)) //lager en slice av strings med lengde lik antall chans
-	selectCases := make([]reflect.SelectCase, len(typeNames)) //lager en slice av reflect.SelectCase med lengde lik antall chanseler i args.
+	checkArgs(chans...)
+	typeNames := make([]string, len(chans))
+	selectCases := make([]reflect.SelectCase, len(typeNames)) 
 	for i, ch := range chans {
-		selectCases[i] = reflect.SelectCase{ //lager en reflect.SelectCase for hver channel
-			Dir:  reflect.SelectRecv, // SelectRecv : case <-Chan (mottar data fra kanal)
-			Chan: reflect.ValueOf(ch), // lagrer verdien av kanalen i Chan
+		selectCases[i] = reflect.SelectCase{ 
+			Dir:  reflect.SelectRecv,
+			Chan: reflect.ValueOf(ch), 
 		}
-		typeNames[i] = reflect.TypeOf(ch).Elem().String() // lagrer navnet på elementtypen til kanalen i typeNames 
+		typeNames[i] = reflect.TypeOf(ch).Elem().String() 
 	}
 
-	conn := conn.DialBroadcastUDP(port) //lager en UDP-tilkobling som kan broadcaste til flere Receivers (fra bcast_conn_darwin.go)
-	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port)) //lager en adresse som sender UDP-meldinger
+	conn := conn.DialBroadcastUDP(port) 
+	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port)) 
 	for {
-		chosen, value, _ := reflect.Select(selectCases) //velger en case fra selectCases og lagrer verdien i value
-		jsonstr, _ := json.Marshal(value.Interface()) //konverterer verdien til JSON
-		ttj, _ := json.Marshal(typeTaggedJSON{ //konverterer verdien til type-tagged JSON og lagrer i ttj 
-			TypeId: typeNames[chosen], //lagrer navnet på elementtypen til kanalen i TypeId
-			JSON:   jsonstr, //lagrer JSON-verdien i JSON
+		chosen, value, _ := reflect.Select(selectCases) 
+		jsonstr, _ := json.Marshal(value.Interface()) 
+		ttj, _ := json.Marshal(typeTaggedJSON{ 
+			TypeId: typeNames[chosen], 
+			JSON:   jsonstr, 
 		})
 		if len(ttj) > bufSize { 
 		    panic(fmt.Sprintf(
@@ -42,44 +46,44 @@ func Transmitter(port int, chans ...interface{}) {
 		        "Either send smaller packets, or go to network/bcast/bcast.go and increase the buffer size",
 		        len(ttj), bufSize, string(ttj)))
 		}
-		conn.WriteTo(ttj, addr) //sender type-tagged JSON til addr -> broadcast til alle enheter på nettverket 
+		conn.WriteTo(ttj, addr) 
     		
 	}
 }
 
-// Matches type-tagged JSON received on `port` to element types of `chans`, then
-// sends the decoded value on the corresponding channel
-// Funksjonen aksepterer et variabelt antall argumenter (...) av interface{}-type
-// interface{}-type er en tom interface som kan inneholde verdier av hvilken som helst type
 func Receiver(port int, chans ...interface{}) {
 	checkArgs(chans...)
-	chansMap := make(map[string]interface{}) //lager en map med string som key og interface{} som value
+	chansMap := make(map[string]interface{}) 
 	for _, ch := range chans {
-		chansMap[reflect.TypeOf(ch).Elem().String()] = ch //legger elementtypen til kanalen som key og kanalen som value i chansMap. elementtype kan være en struct, int, string, etc.
+		chansMap[reflect.TypeOf(ch).Elem().String()] = ch 
 	}
 
-	var buf [bufSize]byte  //buffer for å motta data
+	var buf [bufSize]byte 
 	conn := conn.DialBroadcastUDP(port)
 	for {
-		n, _, e := conn.ReadFrom(buf[0:]) //leser data fra conn og lagrer i buf
+		n, _, e := conn.ReadFrom(buf[0:])
 		if e != nil {
 			fmt.Printf("bcast.Receiver(%d, ...):ReadFrom() failed: \"%+v\"\n", port, e)
 		}
 
-		var ttj typeTaggedJSON //lager en variabel av typeTaggedJSON, som er en struct med TypeId og JSON
-		json.Unmarshal(buf[0:n], &ttj) //konverterer JSON til typeTaggedJSON og lagrer i ttj, n = lengden på dataen som ble lest fra conn, buf = dataen som ble lest fra conn, &ttj = peker til ttj
-		// JSON-verdier er en verdi som kan være en string, int, bool, struct, etc.
-		ch, ok := chansMap[ttj.TypeId] //henter kanalen fra chansMap med key = ttj.TypeId og lagrer i ch og ok
-		if !ok { //hvis kanalen ikke finnes i chansMap
+		var ttj typeTaggedJSON
+		json.Unmarshal(buf[0:n], &ttj) 
+
+		ch, ok := chansMap[ttj.TypeId] 
+		if !ok { 
 			continue
 		} 
-		v := reflect.New(reflect.TypeOf(ch).Elem()) //lager en ny verdi av elementtypen til kanalen og lagrer i v 
-		json.Unmarshal(ttj.JSON, v.Interface()) //konverterer JSON til elementtypen til kanalen og lagrer i v
-		reflect.Select([]reflect.SelectCase{{ //velger en case fra selectCases
-			Dir:  reflect.SelectSend, //SelectSend : case Chan <- Send (sender data til kanal)
-			Chan: reflect.ValueOf(ch), //lagrer verdien av kanalen i Chan
-			Send: reflect.Indirect(v), //lagrer verdien av v i Send 
+		v := reflect.New(reflect.TypeOf(ch).Elem()) 
+		json.Unmarshal(ttj.JSON, v.Interface())
+		reflect.Select([]reflect.SelectCase{{ 
+			Dir:  reflect.SelectSend, 
+			Chan: reflect.ValueOf(ch), 
+			Send: reflect.Indirect(v), 
 		}})
+
+		fsm.RunningElevator = v.Elem().Interface().(elevio.Elevator)
+		fmt.Println("Running Elevator:", fsm.RunningElevator)
+		time.Sleep(3)
 	}
 }
 
@@ -88,22 +92,16 @@ type typeTaggedJSON struct {
 	JSON   []byte
 }
 
-// Checks that args to Tx'er/Rx'er are valid:
-//  All args must be channels
-//  Element types of channels must be encodable with JSON
-//  No element types are repeated
-// Implementation note:
-//  - Why there is no `isMarshalable()` function in encoding/json is a mystery,
-//    so the tests on element type are hand-copied from `encoding/json/encode.go`
+
 func checkArgs(chans ...interface{}) {
 	n := 0
 	for range chans {
 		n++
 	}
-	elemTypes := make([]reflect.Type, n) //lager en slice av reflect.Type med lengde lik antall chans
+	elemTypes := make([]reflect.Type, n)
 
 	for i, ch := range chans {
-		// Must be a channel
+		
 		if reflect.ValueOf(ch).Kind() != reflect.Chan {
 			panic(fmt.Sprintf(
 				"Argument must be a channel, got '%s' instead (arg# %d)",
@@ -112,7 +110,6 @@ func checkArgs(chans ...interface{}) {
 
 		elemType := reflect.TypeOf(ch).Elem()
 
-		// Element type must not be repeated
 		for j, e := range elemTypes {
 			if e == elemType {
 				panic(fmt.Sprintf(
@@ -122,12 +119,10 @@ func checkArgs(chans ...interface{}) {
 		}
 		elemTypes[i] = elemType
 
-		// Element type must be encodable with JSON
 		checkTypeRecursive(elemType, []int{i+1})
 
 	}
 }
-
 
 func checkTypeRecursive(val reflect.Type, offsets []int){
 	switch val.Kind() {
@@ -149,4 +144,53 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 			checkTypeRecursive(val.Field(idx).Type, append(offsets, idx+1))
 		}
 	}
+}
+
+func RunBroadcast() {
+	flag.StringVar(&ID, "id", "", "id of this peer") 
+	flag.Parse() 
+
+	if ID == "" { 
+		localIP, err := localip.LocalIP() 
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
+		}
+		ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
+	}
+
+	peerUpdateCh := make(chan peers.PeerUpdate)
+
+	peerTxEnable := make(chan bool) 
+	go peers.Transmitter(156463, ID, peerTxEnable)
+	go peers.Receiver(156463, peerUpdateCh) //156476
+
+	ElevatorMessageTX := make(chan elevio.Elevator)
+	ElevatorMessageRX:= make(chan elevio.Elevator)
+
+	go Transmitter(16563, ElevatorMessageTX) //16569
+	go Receiver(16563, ElevatorMessageRX)
+
+
+	go func() {
+		for {
+			ElevatorMessage := fsm.RunningElevator //oppdaterer seg ikke 
+			ElevatorMessageTX <- ElevatorMessage
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	// fmt.Println("Started")
+	// for {
+	// 	select {
+	// 	case p := <-peerUpdateCh: 
+	// 		fmt.Printf("Slave update:\n") 
+	// 		fmt.Printf("  Slaves:    %q\n", p.Peers)
+	// 		fmt.Printf("  New:      %q\n", p.New) 
+	// 		fmt.Printf("  Lost:     %q\n", p.Lost) 
+
+	// 	case a := <-ElevatorMessageRX: 
+	// 		fmt.Printf("Received: %#v\n", a) 
+	// 	}
+	// }
 }

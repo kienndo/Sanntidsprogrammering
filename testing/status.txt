@@ -1,1 +1,1 @@
-{"primary_alive":true,"last_number":1}
+{"Floor":-1,"Dirn":0,"Behaviour":0,"Request":[[false,false,false],[false,false,false],[false,false,false],[false,false,false]],"CabRequests":[true,true,false,false],"Config":{"ClearRequestVariant":0,"DoorOpenDuration":0}}
