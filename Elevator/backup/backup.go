@@ -8,6 +8,9 @@ import (
     //costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
+// Function that uses a UDP connection to role out a primary/backup system.
+// If a message is received within 5 seconds, the listener becomes a backup.
+// Then, if no message is received within 10 seconds, the listener becomes primary.
 func ListenForPrimary() {
     conn, err := net.ListenPacket("udp", ":29500")
     if err != nil {
@@ -24,12 +27,11 @@ func ListenForPrimary() {
     }
 
     fmt.Println("Backup started")
-
+    // New timer
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
     
-
     for {
         select {
         case <-timer.C:
@@ -50,7 +52,7 @@ func ListenForPrimary() {
     }
 
 }
-
+// 
 func SetToPrimary() {
 
     time.Sleep(5*time.Second)

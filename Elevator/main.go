@@ -26,6 +26,9 @@ func main() {
 	ChanObstr := make(chan bool)
 	ChanHallRequests := make(chan elevio.ButtonEvent)
 	ChanCabRequests := make(chan elevio.ButtonEvent)
+	//elevatorUnavailable := make(chan bool)
+
+
 	
 	//Polling 
 	go elevio.PollButtons(ChanButtons)
