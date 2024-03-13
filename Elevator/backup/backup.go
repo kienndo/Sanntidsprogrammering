@@ -2,13 +2,15 @@ package backup
 
 import (
 	"Sanntidsprogrammering/Elevator/costfunctions"
+	"Sanntidsprogrammering/Elevator/elevio"
 	"fmt"
 	"net"
 	"time"
+    fsm "Sanntidsprogrammering/Elevator/fsm"
 	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
-func ListenForPrimary() {
+func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
     conn, err := net.ListenPacket("udp", ":29500")
     if err != nil {
         fmt.Println("Error listening")
@@ -37,6 +39,26 @@ func ListenForPrimary() {
         case <-timer.C:
             fmt.Println("Timeout expired, becoming primary")
             return
+            for { // Put into function later?
+		
+                select {
+                case a := <-ChanButtons:
+                    fmt.Printf("Order: %+v\n", a)
+                
+                    fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
+                    fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
+        
+                    
+                case a := <-ChanFloors:
+                    costfunctions.SetLastValidFloor(a)
+                    fmt.Printf("Floor: %+v\n", a)
+                    fsm.FsmOnFloorArrival(a)
+                    
+                case a := <-ChanObstr:
+                    fmt.Printf("Obstructing: %+v\n", a)
+                    fsm.ObstructionIndicator = a
+                }
+            }
         default:
             conn.SetReadDeadline(time.Now().Add(10 * time.Second))
             _, _, err := conn.ReadFrom(buffer)
@@ -71,7 +93,7 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        costfunctions.MasterRecieve()
+        go costfunctions.MasterRecieve()
         
 
         time.Sleep(1*time.Second)

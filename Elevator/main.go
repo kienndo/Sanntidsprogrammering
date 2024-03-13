@@ -34,11 +34,9 @@ func main() {
 	go costfunctions.UpdateHallRequests(ChanHallRequests)
 
 	go fsm.CheckForTimeout()
-	//go costfunctions.MasterRecieve()
-	//go costfunctions.ChooseConnection()
 
 	//Primary and backup
-	backup.ListenForPrimary()
+	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr) //Grunnen til at den ikke kjører i backup er fordi den ikke kommer seg ut
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
