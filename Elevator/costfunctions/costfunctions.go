@@ -224,7 +224,8 @@ func RecievingState(address string,state *HRAElevState) {
 
 		mutex.Lock()
 		*state = newState
-		fmt.Println(newState)
+		fmt.Println("UDPSEND", newState)
+	
 		mutex.Unlock()
 
 
