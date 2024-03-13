@@ -199,15 +199,6 @@ func MasterRecieve(){
 	select{
 	case a := <- ChanElevator1:
 		
-
-		// State1 = HRAElevState{
-		// 	Behavior: elevio.EbToString(a.Behaviour),
-		// 	Floor: a.Floor,
-		// 	Direction: elevio.ElevioDirnToString(a.Dirn),
-		// 	CabRequests: a.CabRequests[:],
-		// }
-		// fmt.Println("State1",State1)
-		// AllElevators["one"] = State1
 		Input1 := HRAInput{
 			HallRequests: MasterHallRequests,
 			States: map[string]HRAElevState{

@@ -15,7 +15,6 @@ func main() {
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
 	costfunctions.InitMasterHallRequests()
-	//AllElevators := make(map[string]elevio.Elevator)
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
@@ -39,7 +38,7 @@ func main() {
 	go costfunctions.ChooseConnection()
 
 	//Primary and backup
-	go backup.ListenForPrimary()
+	backup.ListenForPrimary()
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
