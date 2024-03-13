@@ -10,10 +10,9 @@ import (
 	"os/exec"
 	"sync"
 	"time"
-	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	"runtime"
 )
 
-const hraExecutable = "/home/student/Sanntidsprogrammering/Elevator/hall_request_assigner"
 
 type HRAElevState struct {
     Behavior    string      `json:"behaviour"`
@@ -23,7 +22,7 @@ type HRAElevState struct {
 }
 type HRAInput struct {
 	HallRequests 	[elevio.N_FLOORS][2]bool			`json:"hallRequests"`
-	States 			map[string]HRAElevState		 		`json:"states"` //Oppdaterer med hva som er i hver heis, må bare lage tre
+	States 			map[string]HRAElevState		 		`json:"states"`
 }
 
 var(
@@ -41,9 +40,9 @@ var(
 	Address1 int = 1659
 	Address2 int = 1658
 
-	Input = HRAInput{ //Hvordan får jeg denne til å oppdatere seg
-		HallRequests: 	MasterHallRequests,
-		States:  AllElevators}
+	// Input = HRAInput{ // Updates in MasterRecieve
+	// 	HallRequests: 	MasterHallRequests,
+	// 	States:  AllElevators}
 
 )
 
@@ -59,14 +58,21 @@ func SetLastValidFloor(ValidFloor int) {
 	LastValidFloor = ValidFloor
 }
 
-func CostFunction(){
-	jsonBytes, err := json.Marshal(Input)
+func CostFunction(Input HRAInput){
+	hraExecutable := ""
+    switch runtime.GOOS {
+        case "linux":   hraExecutable  = "hall_request_assigner"
+        case "windows": hraExecutable  = "hall_request_assigner.exe"
+        default:        panic("OS not supported")
+    }
+
+    jsonBytes, err := json.Marshal(Input)
     if err != nil {
         fmt.Println("json.Marshal error: ", err)
         return
     }
     
-    ret, err := exec.Command(hraExecutable, "-i", string(jsonBytes)).CombinedOutput() //"../hall_request_assigner/"+
+    ret, err := exec.Command(hraExecutable, "-i", string(jsonBytes)).CombinedOutput()
     if err != nil {
         fmt.Println("exec.Command error: ", err)
         fmt.Println(string(ret))
@@ -163,8 +169,6 @@ func RecievingState(address string,state *elevio.Elevator) {
 			continue
 		}
 
-		// recievedString := string(buffer[:n])
-		// fmt.Println(recievedString)
 		var newState elevio.Elevator
 		err = json.Unmarshal(buffer[:n],&newState)
 		if err != nil {
@@ -194,38 +198,47 @@ func MasterRecieve(){
 	for{
 	select{
 	case a := <- ChanElevator1:
+		
 
-		State1 = HRAElevState{
-			Behavior: elevio.EbToString(a.Behaviour),
-			Floor: a.Floor,
-			Direction: elevio.ElevioDirnToString(a.Dirn),
-			CabRequests: a.CabRequests[:],
-		}
-		fmt.Println("State1",State1)
-		AllElevators["one"] = State1
-		Input = HRAInput{
+		// State1 = HRAElevState{
+		// 	Behavior: elevio.EbToString(a.Behaviour),
+		// 	Floor: a.Floor,
+		// 	Direction: elevio.ElevioDirnToString(a.Dirn),
+		// 	CabRequests: a.CabRequests[:],
+		// }
+		// fmt.Println("State1",State1)
+		// AllElevators["one"] = State1
+		Input1 := HRAInput{
 			HallRequests: MasterHallRequests,
-			States: AllElevators,
+			States: map[string]HRAElevState{
+			"one": HRAElevState{
+					Behavior: elevio.EbToString(a.Behaviour),
+					Floor: a.Floor,
+					Direction: elevio.ElevioDirnToString(a.Dirn),
+					CabRequests: a.CabRequests[:],
+				},
+			},
 		}
-		fmt.Println("INPUT:", Input)
-		CostFunction()
+				
+		fmt.Println("INPUT:", Input1)
+		CostFunction(Input1)
 
 	case b := <-ChanElevator2:
-		State2 = HRAElevState{
-			Behavior: elevio.EbToString(b.Behaviour),
-			Floor: b.Floor,
-			Direction: elevio.ElevioDirnToString(b.Dirn),
-			CabRequests: b.CabRequests[:],
-			
-		}
-		fmt.Println("State2", State2)
-		AllElevators["two"] = State2
-		Input = HRAInput{
+		Input2 := HRAInput{
 			HallRequests: MasterHallRequests,
-			States: AllElevators,
+			States: map[string]HRAElevState{
+			"one": HRAElevState{
+					Behavior: elevio.EbToString(b.Behaviour),
+					Floor: b.Floor,
+					Direction: elevio.ElevioDirnToString(b.Dirn),
+					CabRequests: b.CabRequests[:],
+				},
+			},
 		}
-		fmt.Println("INPUT:", Input)
-		CostFunction()
+				
+		fmt.Println("INPUT:", Input2)
+		CostFunction(Input2)
+
 	}
 }
 
