@@ -71,7 +71,6 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 }
 
 
-
 func SetToPrimary() {
 
     time.Sleep(5*time.Second)

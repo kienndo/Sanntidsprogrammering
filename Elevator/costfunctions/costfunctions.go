@@ -2,15 +2,16 @@ package costfunctions
 
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
-	fsm "Sanntidsprogrammering/Elevator/fsm"
-	"Sanntidsprogrammering/Elevator/network/bcast"
+	bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
+	"runtime"
 	"sync"
 	"time"
-	"runtime"
+	
 )
 
 
@@ -25,13 +26,17 @@ type HRAInput struct {
 	States 			map[string]HRAElevState		 		`json:"states"`
 }
 
+type HRAOutput struct {			
+	States 			map[string][][2]bool
+}
+
 var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
 	State1 HRAElevState
 	State2 HRAElevState
 	CostMutex sync.Mutex
-	HRAElevator = fsm.RunningElevator
+	//HRAElevator = fsm.RunningElevator
 	ChanHallRequests = make(chan elevio.ButtonEvent)
 	AllElevators = make(map[string]HRAElevState)
 
@@ -40,10 +45,7 @@ var(
 	Address1 int = 1659
 	Address2 int = 1658
 
-	// Input = HRAInput{ // Updates in MasterRecieve
-	// 	HallRequests: 	MasterHallRequests,
-	// 	States:  AllElevators}
-
+	NewOutput HRAOutput
 )
 
 func InitMasterHallRequests(){
@@ -83,13 +85,17 @@ func CostFunction(Input HRAInput){
     err = json.Unmarshal(ret, &output)
     if err != nil {
         fmt.Println("json.Unmarshal error: ", err)
-        return
+        return 
     }
         
     fmt.Printf("output: \n")
     for k, v := range *output {
         fmt.Printf("%6v :  %+v\n", k, v)
     }
+	NewOutput := HRAOutput{
+		States: *output,
+	}
+	fmt.Println("NEW OUTPUT:" , NewOutput)
 }	
 
 func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
@@ -123,12 +129,14 @@ func ChooseConnection() {
 		fmt.Println("Sending to channel 1")
 		go ChannelTaken()
 		go bcast.RunBroadcast(ChanElevator1, Address1)
+		//go CostUpdate(AddrU1)
 
 	} else {
 
 		// Channel 2
 		fmt.Println("sending to channel 2")
 		go bcast.RunBroadcast(ChanElevator2, Address2)
+		//go CostUpdate(AddrU2)
 	}
 	time.Sleep(1*time.Millisecond)
 }
@@ -195,6 +203,7 @@ func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor op
 }
 
 func MasterRecieve(){
+	
 	for{
 	select{
 	case a := <- ChanElevator1:
@@ -204,7 +213,8 @@ func MasterRecieve(){
 			Direction: elevio.ElevioDirnToString(a.Dirn),
 			CabRequests: a.CabRequests[:],
 		}
-		AllElevators["one"] = State1
+		ElevatorIP, _ := localip.LocalIP()
+		AllElevators[ElevatorIP] = State1
 		
 		Input1 := HRAInput{
 			HallRequests: MasterHallRequests,
@@ -221,7 +231,8 @@ func MasterRecieve(){
 			Direction: elevio.ElevioDirnToString(b.Dirn),
 			CabRequests: b.CabRequests[:],
 		}
-		AllElevators["one"] = State2
+		ElevatorIP, _ := localip.LocalIP()
+		AllElevators[ElevatorIP] = State2
 		
 		Input2 := HRAInput{
 			HallRequests: MasterHallRequests,
@@ -234,3 +245,7 @@ func MasterRecieve(){
 }
 }
 
+// func CostUpdate(addr int) {
+
+// 	fsm.RunningElevator.CabRequests = []
+// }
