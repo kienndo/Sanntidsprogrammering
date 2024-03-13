@@ -47,8 +47,9 @@ func main() {
 		select {
 		case a := <-chanButtons:
 			fmt.Printf("Order: %+v\n", a)
+		
+			costfunctions.ButtonIdentifyer(a, costfunctions.ChanHallRequests) 
 			
-			costfunctions.ButtonIdentifyer(a, costfunctions.ChanHallRequests) //vil ikke fungere med cab nå???
 			costfunctions.CostFunction() 
 	
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
@@ -62,6 +63,12 @@ func main() {
 		case a := <-chanObstr:
 			fmt.Printf("Obstructing: %+v\n", a)
 			fsm.ObstructionIndicator = a
+
+		case UpdateHallRequests := <-costfunctions.ChanHallRequests:
+			
+			costfunctions.MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
+	
+			fmt.Println("MasterHallRequests", costfunctions.MasterHallRequests)
 				
 		}
 	}

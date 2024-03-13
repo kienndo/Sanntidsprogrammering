@@ -98,13 +98,16 @@ func ButtonIdentifyer(btnEvent elevio.ButtonEvent, chanHallRequests chan elevio.
 		case btnEvent.Button == elevio.BT_Cab:
 			fmt.Println("CAB", btnEvent)
 			fsm.RunningElevator.CabRequests[btnEvent.Floor] = true;
+			return
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
 			//MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
 			chanHallRequests <- btnEvent
+			return
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
 			chanHallRequests <- btnEvent
+			return
 			//MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
 		default:
 			break
@@ -201,7 +204,7 @@ func RecievingState(address string,state *HRAElevState) {
 
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
-		fmt.Println("failed to listen from udp")
+		fmt.Println("Failed to listen from UDP")
 		return
 	}
 	defer conn.Close()
@@ -210,7 +213,7 @@ func RecievingState(address string,state *HRAElevState) {
 	for {
 		n, _, err := conn.ReadFromUDP(buffer)
 		if err != nil{
-			fmt.Println("failed to read")
+			fmt.Println("Failed to read")
 			continue
 		}
 
@@ -219,13 +222,12 @@ func RecievingState(address string,state *HRAElevState) {
 		var newState HRAElevState
 		err = json.Unmarshal(buffer[:n],&newState)
 		if err != nil {
-			fmt.Println("failed to deserialize")
+			fmt.Println("Failed to deserialize")
 			continue
 		}
 		
 		mutex.Lock()
 		*state = newState
-		fmt.Println("UDPSEND", newState)
 	
 		mutex.Unlock()
 
@@ -236,13 +238,10 @@ func RecievingState(address string,state *HRAElevState) {
 func UpdateStates() {
 
 	fmt.Println("MasterHallRequests", MasterHallRequests)
-	select {
-	case UpdateHallRequests := <-ChanHallRequests:
-		MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
-		fmt.Println("MasterHallRequests", MasterHallRequests)
-	}
+	
 
 	RecievingState(":29501", &State1)
 	RecievingState(":29502", &State2)
+	fmt.Println("State1", State1)
 	
 }
