@@ -208,6 +208,7 @@ func MasterRecieve(){
 	select{
 	case a := <- ChanElevator1:
 		State1 := HRAElevState{
+			fmt.Println("MASTER")
 			Behavior: elevio.EbToString(a.Behaviour),
 			Floor: a.Floor,
 			Direction: elevio.ElevioDirnToString(a.Dirn),
