@@ -22,7 +22,3 @@ func watchdogTimer (seconds int, elevatorUnavailable chan bool) {
 	//master må få alle requests tilbake
 }
 
-
-func reassign(
-	//channels
-)

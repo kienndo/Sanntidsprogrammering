@@ -3,7 +3,7 @@ package main
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
+	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
 	backup "Sanntidsprogrammering/Elevator/backup"
 	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
