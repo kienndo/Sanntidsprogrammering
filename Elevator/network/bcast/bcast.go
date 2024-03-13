@@ -94,9 +94,10 @@ type typeTaggedJSON struct {
 }
 
 
-func checkArgs(chatate1 := HRAElevState{
-			
-	Behavior: elevio.EbToS
+func checkArgs(chans ...interface{}){
+	n := 0
+	for range chans {
+		n++
 	}
 	elemTypes := make([]reflect.Type, n)
 
