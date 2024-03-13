@@ -28,8 +28,8 @@ func ListenForPrimary() {
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
-    go costfunctions.ChooseConnection()
-    go costfunctions.MasterRecieve()
+    costfunctions.ChooseConnection()
+   
     
 
     for {
@@ -71,6 +71,7 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
+        costfunctions.MasterRecieve()
         
 
         time.Sleep(1*time.Second)
