@@ -27,6 +27,8 @@ func main() {
 	go elevio.PollObstructionSwitch(chanObstr)
 
 	go bcast.RunBroadcast()
+
+	go costfunctions.CostFunction() 
 	
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
@@ -37,19 +39,19 @@ func main() {
 
 	fsm.InitializeLights()
 
+
 	for { // Put into function later?
 		
 		select {
 		case a := <-chanButtons:
 			fmt.Printf("Order: %+v\n", a)
 			
-			//costfunctions.WhichButton(a) //vil ikke fungere med cab nå???
+			costfunctions.ButtonIdentifyer(a, costfunctions.ChanHallRequests) //vil ikke fungere med cab nå???
 			costfunctions.CostFunction() 
 	
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 			
 		case a := <-chanFloors:
-
 			costfunctions.SetLastValidFloor(a)
 			fmt.Printf("Floor: %+v\n", a)
 			fsm.FsmOnFloorArrival(a)

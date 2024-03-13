@@ -19,30 +19,35 @@ type HRAElevState struct {
     Direction   string      `json:"direction"`
     CabRequests []bool      `json:"cabRequests"`
 }
-
 type HRAInput struct {
-	HallRequests 	[][2]bool					`json:"hallRequests"`
+	HallRequests 	[elevio.N_FLOORS][2]bool					`json:"hallRequests"`
 	States 			map[string]HRAElevState		 `json:"states"` //Oppdaterer med hva som er i hver heis, må bare lage tre
 }
 
 var(
-
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
 	State1 HRAElevState
 	State2 HRAElevState
 	mutex sync.Mutex
 	HRAElevator = fsm.RunningElevator
+	ChanHallRequests = make(chan elevio.ButtonEvent)
 
 	// Blir egentlig en initialisering
 	CurrentState = HRAElevState {
-
-		Behavior:      elevio.EbToString(HRAElevator.Behaviour),
+		Behavior:      "moving", //elevio.EbToString(HRAElevator.Behaviour),
 		Floor:         1, //LastValidFloor, 
-		Direction:     elevio.ElevioDirnToString(HRAElevator.Dirn),
-		CabRequests:   HRAElevator.CabRequests, 
+		Direction:     "up", //elevio.ElevioDirnToString(HRAElevator.Dirn),
+		CabRequests:   make([]bool, 0), //HRAElevator.CabRequests, 
 	}
-	
+
+	Input = HRAInput{
+		HallRequests: 	MasterHallRequests,
+		States: map[string]HRAElevState{
+			"one": State1,
+			"two": State2,
+		},
+	}
 )
 
 func InitMasterHallRequests(){
@@ -59,13 +64,7 @@ func SetLastValidFloor(ValidFloor int) {
 
 func CostFunction(){
 
-	var Input = HRAInput{
-		HallRequests: 	MasterHallRequests[:],
-		States: map[string]HRAElevState{
-			"one": State1,
-			"two": State2,
-		},
-	}
+	
 	jsonBytes, err := json.Marshal(Input)
     if err != nil {
         fmt.Println("json.Marshal error: ", err)
@@ -93,18 +92,20 @@ func CostFunction(){
 
 }	
 
-func ButtonIdentifyer(btnEvent elevio.ButtonEvent) {
+func ButtonIdentifyer(btnEvent elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent) {
 
 		switch {
 		case btnEvent.Button == elevio.BT_Cab:
 			fmt.Println("CAB", btnEvent)
-			HRAElevator.CabRequests[btnEvent.Floor] = true;
+			fsm.RunningElevator.CabRequests[btnEvent.Floor] = true;
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
-			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
+			//MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
+			chanHallRequests <- btnEvent
 		case btnEvent.Button == elevio.BT_HallDown:
 			fmt.Println("Hall",btnEvent)
-			MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
+			chanHallRequests <- btnEvent
+			//MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
 		default:
 			break
 		}
@@ -234,7 +235,13 @@ func RecievingState(address string,state *HRAElevState) {
 
 func UpdateStates() {
 
-	//Må oppdatere inni HRAElevState
+	//Må oppdatere inni HRAElevState, men dette er jo peker?
+	fmt.Println("MasterHallRequests", MasterHallRequests)
+	select {
+	case UpdateHallRequests := <-ChanHallRequests:
+		MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
+		fmt.Println("MasterHallRequests", MasterHallRequests)
+	}
 
 	RecievingState(":29501", &State1)
 	RecievingState(":29502", &State2)
