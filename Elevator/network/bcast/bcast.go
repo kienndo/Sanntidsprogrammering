@@ -170,10 +170,11 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	ElevatorMessageRX := make(chan elevio.Elevator)
 	go Transmitter(addr, ElevatorMessageTX) //16569
 	go Receiver(addr, ElevatorMessageRX)
-
+	
 
 	go func() {
 		for {
+			fmt.Println("kæser kien")
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
 			time.Sleep(1 * time.Second)
