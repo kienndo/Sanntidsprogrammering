@@ -232,7 +232,7 @@ func EbToString(eb ElevatorBehaviour) string {
 	case EB_Idle:
 		return "idle"
 	case EB_DoorOpen:
-		return "door open"
+		return "doorOpen"
 	case EB_Moving:
 		return "moving"
 	default:
@@ -256,11 +256,11 @@ func ElevioDirnToString(d MotorDirection) string {
 func ElevioButtonToString(b ButtonType) string {
 	switch b {
 	case BT_HallUp:
-		return "B_HallUp"
+		return "hallUp"
 	case BT_HallDown:
-		return "B_HallDown"
+		return "hallDown"
 	case BT_Cab:
-		return "B_Cab"
+		return "cab"
 	default:
 		return "B_UNDEFINED"
 	}
