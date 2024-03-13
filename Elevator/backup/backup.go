@@ -39,26 +39,22 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
         case <-timer.C:
             fmt.Println("Timeout expired, becoming primary")
             return
-            for { // Put into function later?
-		
-                select {
-                case a := <-ChanButtons:
-                    fmt.Printf("Order: %+v\n", a)
+           
+        case a := <-ChanButtons:
+            fmt.Printf("Order: %+v\n", a)  
+            fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
+            fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
+           
+        case a := <-ChanFloors:
+            costfunctions.SetLastValidFloor(a)
+            fmt.Printf("Floor: %+v\n", a)
+            fsm.FsmOnFloorArrival(a)
+                    
+        case a := <-ChanObstr:
+            fmt.Printf("Obstructing: %+v\n", a)
+            fsm.ObstructionIndicator = a
                 
-                    fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
-                    fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
         
-                    
-                case a := <-ChanFloors:
-                    costfunctions.SetLastValidFloor(a)
-                    fmt.Printf("Floor: %+v\n", a)
-                    fsm.FsmOnFloorArrival(a)
-                    
-                case a := <-ChanObstr:
-                    fmt.Printf("Obstructing: %+v\n", a)
-                    fsm.ObstructionIndicator = a
-                }
-            }
         default:
             conn.SetReadDeadline(time.Now().Add(10 * time.Second))
             _, _, err := conn.ReadFrom(buffer)
@@ -72,8 +68,9 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
             timer.Reset(10 * time.Second)
         }
     }
-
 }
+
+
 
 func SetToPrimary() {
 
