@@ -247,6 +247,57 @@ func MasterRecieve(){
 }
 }
 
-func SendAssignedOrders(){
-	//hente ut mapet fra hraoutput
-}
+
+// func SendAssignedOrders(){
+// 	// Sends the New hall order to the given IP-address
+// 	for IP, NewHallOrders := range HRAOutput{
+// 		jsonData, err := json.Marshal(NewHallOrders)
+// 		if err != nil {
+// 			return 
+// 		}
+
+// 		udpAddr, err := net.ResolveUDPAddr("udp", IP+":8080") // CHOOSE A NEW PORT
+// 		if err != nil {
+// 			return
+// 		}
+
+// 		conn, err := net.DialUDP("udp", nil, udpAddr)
+// 		if err != nil {
+// 			return 
+// 		}
+// 		defer conn.Close()
+
+// 		_, err = conn.Write(jsonData)
+// 		if err != nil {
+// 			return 
+// 		}
+// 	}
+// }
+
+// func RecieveNewAssignedOrders(){
+// 	addr, err := net.ResolveUDPAddr("udp", ":8080")
+// 	if err != nil{
+// 		fmt.Println("Error resolving UDP address: ", err)
+// 		return
+// 	}
+
+// 	conn, err := net.ListenUDP("udp", addr)
+// 	if err != nil{
+// 		fmt.Println("Error listening for UDP packets: ", err)
+// 		return
+// 	}
+// 	defer conn.Close()
+
+// 	for{
+// 		buffer := make([]byte, 1024)
+// 		n, _, _ := conn.ReadFromUDP(buffer)
+
+// 		var AssignedHallRequests [][2]bool
+// 		if err := json.Unmarshal(buffer[:n], &AssignedHallRequests); err != nil {
+// 			fmt.Println("Error decoding JSON", err)
+// 			continue
+// 		}
+
+// 	}
+
+// }
