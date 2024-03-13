@@ -26,11 +26,7 @@ func main() {
 	ChanObstr := make(chan bool)
 	ChanHallRequests := make(chan elevio.ButtonEvent)
 	ChanCabRequests := make(chan elevio.ButtonEvent)
-	//ChanUpdate := make(chan elevio.Elevator)
-
-	//ChanElevator1 := make(chan elevio.Elevator)
-	//ChanElevator2 := make(chan elevio.Elevator)
-
+	
 	//Polling 
 	go elevio.PollButtons(ChanButtons)
 	go elevio.PollFloorSensor(ChanFloors)
@@ -38,9 +34,7 @@ func main() {
 	go costfunctions.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
 	go costfunctions.UpdateHallRequests(ChanHallRequests)
 
-	//go bcast.RunBroadcast(ElevatorMessageTX, ElevatorMessageRX, )
 	go fsm.CheckForTimeout()
-	go costfunctions.CostFunction() 
 	go costfunctions.MasterRecieve()
 	go costfunctions.ChooseConnection()
 
@@ -56,9 +50,9 @@ func main() {
 		case a := <-ChanButtons:
 			fmt.Printf("Order: %+v\n", a)
 		
-			//costfunctions.CostFunction() 
 			fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
+
 			
 		case a := <-ChanFloors:
 			costfunctions.SetLastValidFloor(a)
