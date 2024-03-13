@@ -6,71 +6,68 @@ import (
 	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 	"fmt"
 	backup "Sanntidsprogrammering/Elevator/backup"
-	bcast "Sanntidsprogrammering/Elevator/network/bcast"
-	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
+	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
 func main() {
-	numFloors := 4
 
+	//Initialization
+	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
 	costfunctions.InitMasterHallRequests()
-
-	go fsm.CheckForTimeout()
-
-	chanButtons := make(chan elevio.ButtonEvent)
-	chanFloors := make(chan int)
-	chanObstr := make(chan bool)
-	//elevatorUnavailable := make(chan bool)
-	
-	go elevio.PollButtons(chanButtons)
-	go elevio.PollFloorSensor(chanFloors)
-	go elevio.PollObstructionSwitch(chanObstr)
-
-	go bcast.RunBroadcast()
-
-	go costfunctions.CostFunction() 
-	
+	//AllElevators := make(map[string]elevio.Elevator)
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
 
+	//Creating channels
+	ChanButtons := make(chan elevio.ButtonEvent)
+	ChanFloors := make(chan int)
+	ChanObstr := make(chan bool)
+	ChanHallRequests := make(chan elevio.ButtonEvent)
+	ChanCabRequests := make(chan elevio.ButtonEvent)
+	//ChanUpdate := make(chan elevio.Elevator)
+
+	//ChanElevator1 := make(chan elevio.Elevator)
+	//ChanElevator2 := make(chan elevio.Elevator)
+
+	//Polling 
+	go elevio.PollButtons(ChanButtons)
+	go elevio.PollFloorSensor(ChanFloors)
+	go elevio.PollObstructionSwitch(ChanObstr)
+	go costfunctions.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
+	go costfunctions.UpdateHallRequests(ChanHallRequests)
+
+	//go bcast.RunBroadcast(ElevatorMessageTX, ElevatorMessageRX, )
+	go fsm.CheckForTimeout()
+	go costfunctions.CostFunction() 
+	go costfunctions.MasterRecieve()
+	go costfunctions.ChooseConnection()
+
+	//Primary and backup
 	go backup.ListenForPrimary()
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
 
-	go costfunctions.UpdateStates()
-
-
 	for { // Put into function later?
 		
 		select {
-		case a := <-chanButtons:
+		case a := <-ChanButtons:
 			fmt.Printf("Order: %+v\n", a)
 		
-			costfunctions.ButtonIdentifyer(a, costfunctions.ChanHallRequests) 
-			
-			costfunctions.CostFunction() 
-	
+			//costfunctions.CostFunction() 
+			fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 			
-		case a := <-chanFloors:
+		case a := <-ChanFloors:
 			costfunctions.SetLastValidFloor(a)
 			fmt.Printf("Floor: %+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 			
-
-		case a := <-chanObstr:
+		case a := <-ChanObstr:
 			fmt.Printf("Obstructing: %+v\n", a)
 			fsm.ObstructionIndicator = a
-
-		case UpdateHallRequests := <-costfunctions.ChanHallRequests:
-			
-			costfunctions.MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
-	
-			fmt.Println("MasterHallRequests", costfunctions.MasterHallRequests)
-				
 		}
 	}
 }

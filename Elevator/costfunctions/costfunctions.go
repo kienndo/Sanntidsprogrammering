@@ -3,12 +3,14 @@ package costfunctions
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	"Sanntidsprogrammering/Elevator/network/bcast"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
-	"time"
 	"sync"
+	"time"
+	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
 )
 
 const hraExecutable = "costfunctions/hall_request_assigner_mac"
@@ -20,8 +22,8 @@ type HRAElevState struct {
     CabRequests []bool      `json:"cabRequests"`
 }
 type HRAInput struct {
-	HallRequests 	[elevio.N_FLOORS][2]bool					`json:"hallRequests"`
-	States 			map[string]HRAElevState		 `json:"states"` //Oppdaterer med hva som er i hver heis, må bare lage tre
+	HallRequests 	[elevio.N_FLOORS][2]bool			`json:"hallRequests"`
+	States 			map[string]HRAElevState		 		`json:"states"` //Oppdaterer med hva som er i hver heis, må bare lage tre
 }
 
 var(
@@ -29,9 +31,15 @@ var(
 	LastValidFloor int
 	State1 HRAElevState
 	State2 HRAElevState
-	mutex sync.Mutex
+	CostMutex sync.Mutex
 	HRAElevator = fsm.RunningElevator
 	ChanHallRequests = make(chan elevio.ButtonEvent)
+	AllElevators = make(map[string]HRAElevState)
+
+	ChanElevator1 = make(chan elevio.Elevator)
+	ChanElevator2 = make(chan elevio.Elevator)
+	Address1 int = 1659
+	Address2 int = 1658
 
 	// Blir egentlig en initialisering
 	CurrentState = HRAElevState {
@@ -41,14 +49,9 @@ var(
 		CabRequests:   make([]bool, 0), //HRAElevator.CabRequests, 
 	}
 
-	Input = HRAInput{
-		HallRequests: 	MasterHallRequests,
-		States: map[string]HRAElevState{
-			"one": State1,
-			"two": State2,
-		},
-	}
+	Input HRAInput
 )
+
 
 func InitMasterHallRequests(){
 	for i := 0; i<elevio.N_FLOORS; i++{
@@ -63,8 +66,11 @@ func SetLastValidFloor(ValidFloor int) {
 }
 
 func CostFunction(){
+	Input = HRAInput{
+		HallRequests: 	MasterHallRequests,
+		States: 		AllElevators,
+	}
 
-	
 	jsonBytes, err := json.Marshal(Input)
     if err != nil {
         fmt.Println("json.Marshal error: ", err)
@@ -92,25 +98,16 @@ func CostFunction(){
 
 }	
 
-func ButtonIdentifyer(btnEvent elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent) {
+func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
 
-		switch {
-		case btnEvent.Button == elevio.BT_Cab:
-			fmt.Println("CAB", btnEvent)
-			fsm.RunningElevator.CabRequests[btnEvent.Floor] = true;
-			return
-		case btnEvent.Button == elevio.BT_HallDown:
-			fmt.Println("Hall",btnEvent)
-			//MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
-			chanHallRequests <- btnEvent
-			return
-		case btnEvent.Button == elevio.BT_HallDown:
-			fmt.Println("Hall",btnEvent)
-			chanHallRequests <- btnEvent
-			return
-			//MasterHallRequests[btnEvent.Floor][btnEvent.Button] = true;
-		default:
-			break
+		select {
+		case btnEvent := <-chanButtonRequests:
+			if btnEvent.Button == elevio.BT_Cab{
+				chanCabRequests <- btnEvent
+			} else{
+				chanHallRequests <- btnEvent
+
+			}
 		}
 	}
 
@@ -131,13 +128,14 @@ func ChooseConnection() {
 		// Channel 1
 		fmt.Println("Sending to channel 1")
 		go ChannelTaken()
-		go SendState(CurrentState, ":29501")
+		go bcast.RunBroadcast(ChanElevator1, Address1)
 
 	} else {
 
 		// Channel 2
 		fmt.Println("sending to channel 2")
-		go SendState(CurrentState, ":29502")
+		go bcast.RunBroadcast(ChanElevator2, Address2)
+		
 
 	}
 
@@ -159,42 +157,7 @@ func ChannelTaken() {
 
 	}
 }
-
-func SendState(state HRAElevState, addr string) {
-
-	// Send states til master
-	conn, err := net.Dial("udp","10.100.23.255"+addr)
-	if err != nil {
-		fmt.Println("Failed to dial UDP %vn", err)
-		return
-	}
-	fmt.Println("kæser moren din kien")
-	defer conn.Close()
-
-	for {
-
-	jsonData, err := json.Marshal(state)
-	if err != nil {
-		fmt.Println("failed to serialize data")
-		return
-	}
-
-	_, err = conn.Write(jsonData)
-	if err != nil {
-		fmt.Println("failed to send state")
-		return
-	}
-
-	// _, err := conn.Write([]byte("UDP connection funker på tide å kæse moren til kien"))
-	// if err != nil {
-	// 	fmt.Println("UDP connection funker ikke :(")
-	// }
-	time.Sleep(1*time.Second)
- }
-}
-
-
-func RecievingState(address string,state *HRAElevState) {
+func RecievingState(address string,state *elevio.Elevator) {
 
 	addr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
@@ -219,29 +182,60 @@ func RecievingState(address string,state *HRAElevState) {
 
 		// recievedString := string(buffer[:n])
 		// fmt.Println(recievedString)
-		var newState HRAElevState
+		var newState elevio.Elevator
 		err = json.Unmarshal(buffer[:n],&newState)
 		if err != nil {
 			fmt.Println("Failed to deserialize")
 			continue
 		}
 		
-		mutex.Lock()
+		CostMutex.Lock()
 		*state = newState
 	
-		mutex.Unlock()
-
+		CostMutex.Unlock()
 
 	}
 }
 
-func UpdateStates() {
 
-	fmt.Println("MasterHallRequests", MasterHallRequests)
-	
+func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
+	for { 
+		select {
+		case UpdateHallRequests := <-ChanHallRequests:
+			CostMutex.Lock()
+			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
+			CostMutex.Unlock()	
+		}
+	}
+}
 
-	RecievingState(":29501", &State1)
-	RecievingState(":29502", &State2)
-	fmt.Println("State1", State1)
-	
+func MasterRecieve(){
+	for{
+	select{
+	case a := <- ChanElevator1:
+
+		State1 = HRAElevState{
+			Behavior: elevio.EbToString(a.Behaviour),
+			Floor: a.Floor,
+			Direction: elevio.ElevioDirnToString(a.Dirn),
+			CabRequests: a.CabRequests[:],
+		}
+		fmt.Println("State1",State1)
+		Input.States["one"] = State1
+		fmt.Println("INPUT: ", Input)
+
+	case b := <-ChanElevator2:
+		State2 = HRAElevState{
+			Behavior: elevio.EbToString(b.Behaviour),
+			Floor: b.Floor,
+			Direction: elevio.ElevioDirnToString(b.Dirn),
+			CabRequests: b.CabRequests[:],
+			
+		}
+		fmt.Println("State2", State2)
+		Input.States["two"] = State2
+		fmt.Println("INPUT: ", Input)
+	}
+}
+
 }

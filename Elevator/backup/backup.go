@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"net"
 	"time"
-    costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
-  
+    //costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
 func ListenForPrimary() {
@@ -29,7 +28,7 @@ func ListenForPrimary() {
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
-    go costfunctions.ChooseConnection()
+    
 
     for {
         select {
@@ -70,8 +69,7 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        go costfunctions.UpdateStates()
-
+        //go costfunctions.UpdateStates() // Burde denne egentlig ligge her
 
         time.Sleep(1*time.Second)
     }

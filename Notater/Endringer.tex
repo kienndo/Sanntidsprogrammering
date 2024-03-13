@@ -288,7 +288,40 @@ func ListenForPrimary() {
 
     // }
 
-
-
-
 }
+
+
+// func SendState(state elevio.Elevator, addr string) {
+
+// 	// Send states til master
+// 	conn, err := net.Dial("udp","10.100.23.255"+addr)
+// 	if err != nil {
+// 		fmt.Println("Failed to dial UDP %vn", err)
+// 		return
+// 	}
+// 	fmt.Println("kæser moren din kien")
+// 	defer conn.Close()
+
+// 	for {
+
+// 	jsonData, err := json.Marshal(state)
+// 	if err != nil {
+// 		fmt.Println("failed to serialize data")
+// 		return
+// 	}
+
+// 	_, err = conn.Write(jsonData)
+// 	if err != nil {
+// 		fmt.Println("failed to send state")
+// 		return
+// 	}
+
+// 	// _, err := conn.Write([]byte("UDP connection funker på tide å kæse moren til kien"))
+// 	// if err != nil {
+// 	// 	fmt.Println("UDP connection funker ikke :(")
+// 	// }
+// 	time.Sleep(1*time.Second)
+//  }
+// }
+
+
