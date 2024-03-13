@@ -28,8 +28,8 @@ func ListenForPrimary() {
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
-   go costfunctions.ChooseConnection()
-    go costfunctions.UpdateHallRequests()
+    go costfunctions.ChooseConnection()
+    go costfunctions.ChooseConnection()
     
 
     for {
