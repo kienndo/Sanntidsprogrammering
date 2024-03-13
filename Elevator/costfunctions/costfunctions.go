@@ -204,7 +204,7 @@ func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor op
 
 func MasterRecieve(){
 	
-	for{
+	for {
 	select{
 	case a := <- ChanElevator1:
 		fmt.Println("MASTER")
