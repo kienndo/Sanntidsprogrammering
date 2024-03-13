@@ -6,6 +6,7 @@ import (
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
 	"sync"
+
 )
 
 // Initialization
@@ -150,5 +151,4 @@ func FsmObstruction(a bool){
 		timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 	}
 }
-
 

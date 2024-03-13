@@ -1,11 +1,13 @@
 package backup
 
 import (
-
+	"Sanntidsprogrammering/Elevator/costfunctions"
+	"Sanntidsprogrammering/Elevator/elevio"
 	"fmt"
 	"net"
 	"time"
-    //costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
+    fsm "Sanntidsprogrammering/Elevator/fsm"
+	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
 // Function that uses a UDP connection to role out a primary/backup system.
@@ -37,6 +39,22 @@ func ListenForPrimary() {
         case <-timer.C:
             fmt.Println("Timeout expired, becoming primary")
             return
+           
+        case a := <-ChanButtons:
+            fmt.Printf("Order: %+v\n", a)  
+            fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
+            fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
+           
+        case a := <-ChanFloors:
+            costfunctions.SetLastValidFloor(a)
+            fmt.Printf("Floor: %+v\n", a)
+            fsm.FsmOnFloorArrival(a)
+                    
+        case a := <-ChanObstr:
+            fmt.Printf("Obstructing: %+v\n", a)
+            fsm.ObstructionIndicator = a
+                
+        
         default:
             conn.SetReadDeadline(time.Now().Add(10 * time.Second))
             _, _, err := conn.ReadFrom(buffer)
@@ -50,7 +68,6 @@ func ListenForPrimary() {
             timer.Reset(10 * time.Second)
         }
     }
-
 }
 // 
 func SetToPrimary() {
@@ -71,7 +88,8 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        //go costfunctions.UpdateStates() // Burde denne egentlig ligge her
+        go costfunctions.MasterRecieve()
+        
 
         time.Sleep(1*time.Second)
     }

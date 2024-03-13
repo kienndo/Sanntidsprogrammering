@@ -15,7 +15,6 @@ func main() {
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
 	costfunctions.InitMasterHallRequests()
-	//AllElevators := make(map[string]elevio.Elevator)
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
@@ -38,11 +37,9 @@ func main() {
 	go costfunctions.UpdateHallRequests(ChanHallRequests)
 
 	go fsm.CheckForTimeout()
-	go costfunctions.MasterRecieve()
-	go costfunctions.ChooseConnection()
 
 	//Primary and backup
-	go backup.ListenForPrimary()
+	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr) //Grunnen til at den ikke kjører i backup er fordi den ikke kommer seg ut
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
