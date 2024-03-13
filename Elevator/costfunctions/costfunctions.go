@@ -24,13 +24,12 @@ type HRAElevState struct {
 type HRAInput struct {
 	HallRequests 	[elevio.N_FLOORS][2]bool			`json:"hallRequests"`
 	States 			map[string]HRAElevState		 		`json:"states"`
-}
+}	
+	
 
-type HRAOutput struct {			
-	States 			map[string][][2]bool
-}
 
 var(
+	HRAOutput 			map[string][][2]bool
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	LastValidFloor int
 	State1 HRAElevState
@@ -45,7 +44,6 @@ var(
 	Address1 int = 1659
 	Address2 int = 1658
 
-	NewOutput HRAOutput
 )
 
 func InitMasterHallRequests(){
@@ -191,16 +189,16 @@ func RecievingState(address string,state *elevio.Elevator) {
 }
 
 
-func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
-	for { 
-	select {
-		case UpdateHallRequests := <-ChanHallRequests:
-			CostMutex.Lock()
-			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
-			CostMutex.Unlock()	
-		}
-	}
-}
+// func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
+// 	for { 
+// 	select {
+// 		case UpdateHallRequests := <-ChanHallRequests:
+// 			CostMutex.Lock()
+// 			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
+// 			CostMutex.Unlock()	
+// 		}
+// 	}
+// }
 
 func MasterRecieve(){
 	
@@ -247,7 +245,7 @@ func MasterRecieve(){
 }
 }
 
-// func CostUpdate(addr int) {
-
-// 	fsm.RunningElevator.CabRequests = []
-// }
+func SendAssignedOrders(){
+	//hente ut mapet fra hraoutput
+	//bruke ipadressen til å sende ut den tilhørende arrayen og legge den i den elevatorens request
+}
