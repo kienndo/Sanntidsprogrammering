@@ -191,16 +191,16 @@ func RecievingState(address string,state *elevio.Elevator) {
 }
 
 
-func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
-	for { 
-	select {
-		case UpdateHallRequests := <-ChanHallRequests:
-			CostMutex.Lock()
-			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
-			CostMutex.Unlock()	
-		}
-	}
-}
+// func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
+// 	for { 
+// 	select {
+// 		case UpdateHallRequests := <-ChanHallRequests:
+// 			CostMutex.Lock()
+// 			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
+// 			CostMutex.Unlock()	
+// 		}
+// 	}
+// }
 
 func MasterRecieve(){
 	
@@ -247,7 +247,6 @@ func MasterRecieve(){
 }
 }
 
-// func CostUpdate(addr int) {
-
-// 	fsm.RunningElevator.CabRequests = []
-// }
+func SendAssignedOrders(){
+	//hente ut mapet fra hraoutput
+}
