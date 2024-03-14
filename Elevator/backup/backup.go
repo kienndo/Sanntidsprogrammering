@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	"time"
+    "os"
 	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
@@ -94,7 +95,8 @@ func SetToPrimary() {
         fmt.Println("Doing primarystuff")
         go costfunctions.MasterReceive()
         MasterIPAddress, _ := localip.LocalIP()
-        costfunctions.AllElevators[MasterIPAddress] = costfunctions.HRAElevState{
+        MasterID := fmt.Sprintf("peer-%s-%d", MasterIPAddress, os.Getpid())
+        costfunctions.AllElevators[MasterID] = costfunctions.HRAElevState{
                 Behavior:   elevio.EbToString(fsm.RunningElevator.Behaviour),
                 Floor:      fsm.RunningElevator.Floor, 
                 Direction:  elevio.ElevioDirnToString(fsm.RunningElevator.Dirn),   
@@ -102,7 +104,6 @@ func SetToPrimary() {
             
         }
         costfunctions.CostFunction()
-
 
         time.Sleep(1*time.Second)
     }

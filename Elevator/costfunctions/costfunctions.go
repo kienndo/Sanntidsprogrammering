@@ -4,7 +4,7 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
-	//localip "Sanntidsprogrammering/Elevator/network/localip"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-	fsm "Sanntidsprogrammering/Elevator/fsm"
 	
 )
 
@@ -31,23 +30,20 @@ var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	AllElevators = make(map[string]HRAElevState)
 	LastValidFloor int
-	//State1 HRAElevState
-	//State2 HRAElevState
 
-	// Master recieve channels
-	//ChanRecieveIP chan peers.PeerUpdate
+	// Master recieve channel
 	ChanRecieveElevator chan elevio.Elevator
+	ChanElevator1 = make(chan elevio.Elevator) //BYTTE NAVN
+	ChanElevator2 = make(chan elevio.Elevator) // BYTTE NAVN
 	
 	// Mutex
 	HallRequestMutex sync.Mutex
 	CostMutex sync.Mutex
 	ElevatorMutex sync.Mutex
-
-	ChanElevator1 = make(chan elevio.Elevator)
-	ChanElevator2 = make(chan elevio.Elevator)
 	Address1 int = 1659
 	Address2 int = 1658
 
+	// Cost function - input and output
 	HRAOutput map[string][][2]bool
 	Input HRAInput
 )
