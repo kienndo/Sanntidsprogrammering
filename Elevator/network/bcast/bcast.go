@@ -164,8 +164,8 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	peerTxEnable := make(chan bool) 
 
-	go peers.Transmitter(156463, ID, peerTxEnable)
-	go peers.Receiver(156463, peerUpdateCh) //156476
+	go peers.Transmitter(15646, ID, peerTxEnable)
+	go peers.Receiver(15646, peerUpdateCh) //156476
 
 	ElevatorMessageRX := make(chan elevio.Elevator)
 
