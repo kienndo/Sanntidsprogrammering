@@ -178,7 +178,7 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	go func() {
 		for {
 			IPaddress, _ := localip.LocalIP()
-			fmt.Println("ID", IPaddress)
+			fmt.Println("ID", ID)
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
 			
