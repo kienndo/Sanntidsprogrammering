@@ -41,6 +41,7 @@ var(
 	// Mutex
 	HallRequestMutex sync.Mutex
 	CostMutex sync.Mutex
+	ElevatorMutex sync.Mutex
 
 	ChanElevator1 = make(chan elevio.Elevator)
 	ChanElevator2 = make(chan elevio.Elevator)
@@ -312,14 +313,17 @@ func MasterTest(){
 				Direction: elevio.ElevioDirnToString(a.Dirn),
 				CabRequests: a.CabRequests[:],
 			}
+			ElevatorMutex.Lock()
 			AllElevators["test"] = State //MÅ FINNE RIKTIG IPADRESSE GRR
+			ElevatorMutex.Unlock()
+			fmt.Println("STATE FRA ANNEN HEIS: ", State)
 					
-			Input = HRAInput{
-			HallRequests: MasterHallRequests, 
-						States: AllElevators,
+			// Input = HRAInput{
+			// HallRequests: MasterHallRequests, 
+			// 			States: AllElevators,
 
-					}
-					fmt.Println("INPUT:", Input)
+			// 		}
+			// 		fmt.Println("INPUT:", Input)
 			
 		
 
