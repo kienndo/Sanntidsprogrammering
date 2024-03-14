@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+
 var PortMasterID int = 16666
 
 // Functions for process pairs and indicating primary and backup
@@ -40,7 +41,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
-    go hallassigner.RecieveNewAssignedOrders()
+    //go hallassigner.RecieveNewAssignedOrders()
     go hallassigner.UpdateHallLights()
    
     // Run backup elevator too
@@ -92,7 +93,9 @@ func SetToPrimary() {
 
     defer conn.Close()
     
-
+    
+    go MasterSendID()
+    //go hallassigner.RecieveNewAssignedOrders()
     
     for {
         _, err := conn.Write([]byte("Primary alive"))
@@ -115,9 +118,9 @@ func SetToPrimary() {
             
         }
         hallassigner.CostFunction()
-        //MasterSendID()
         hallassigner.SendAssignedOrders()
         hallassigner.MasterSendHallLights()
+    
 
 
         time.Sleep(1*time.Second)
@@ -135,7 +138,7 @@ func SleepRandomDuration() {
 
 func MasterSendID(){
     var MasterID string
-    var ChanMasterIDTX chan string
+    ChanMasterIDTX := make(chan string)
     if MasterID == "" { 
 		localIP, err := localip.LocalIP() 
 		if err != nil {
@@ -144,6 +147,11 @@ func MasterSendID(){
 		}
 		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
 	}
-    ChanMasterIDTX <- MasterID
-    bcast.Transmitter(PortMasterID, ChanMasterIDTX)
+    fmt.Println("MASTERID: ", MasterID)
+    go bcast.Transmitter(PortMasterID, ChanMasterIDTX)
+    
+    for{
+            ChanMasterIDTX <- MasterID
+        }
+    
 }

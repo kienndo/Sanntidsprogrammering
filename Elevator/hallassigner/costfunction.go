@@ -5,14 +5,14 @@ import (
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
-	localip "Sanntidsprogrammering/Elevator/network/localip"
+	//localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
 	"runtime"
 	"sync"
-	"os"
+	
 )
 
 type HRAElevState struct {
@@ -28,6 +28,7 @@ type HRAInput struct {
 
 var(
 	// Initialization of variables
+	//MasterID string
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	AllElevators = make(map[string]HRAElevState)
 	LastValidFloor int
@@ -43,6 +44,7 @@ var(
 	HallRequestMutex sync.Mutex
 	CostMutex sync.Mutex
 	ElevatorMutex sync.Mutex
+	MasterMutex sync.Mutex
 
 	// Port addresses
 	ElevatorTransmitPort int = 1659
@@ -149,23 +151,28 @@ func SendAssignedOrders(){
 
 func RecieveNewAssignedOrders(){
 	fmt.Println("TEST")
-	//var ChanMasterIDRX chan string
+	ChanMasterIDRX := make(chan string)
+	var MasterID string
 
-	//bcast.Receiver(PortMasterID, ChanMasterIDRX)
+	go bcast.Receiver(16666, ChanMasterIDRX)
 	fmt.Println("TESTER")
-
-	localIP, _ := localip.LocalIP() 
+	go func(){
+		for {
+			select{
+			case p := <-ChanMasterIDRX:
+				MasterID = p
+				
+			}
+		}
 		
-	ID := fmt.Sprintf("%s:%d", localIP, os.Getpid())
+	}()
+	fmt.Println("IPMOTTAK: ", MasterID)
+	addr, err := net.ResolveUDPAddr("udp", MasterID)
 	
-
-	addr, err := net.ResolveUDPAddr("udp", ID)
-		fmt.Println("IPmottak: ", ID)
 		if err != nil{
 			fmt.Println("Error resolving UDP address: ", err)
 			return
 		}
-
 
 		conn, err := net.ListenUDP("udp", addr)
 		if err != nil{
@@ -186,12 +193,14 @@ func RecieveNewAssignedOrders(){
 		fmt.Println("RECIEVED ORDERS: ", AssignedHallRequests)
 		for i := 0; i < elevio.N_FLOORS; i++{
 			for j:=0; j<2; j++{
-				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
-					}
+				if AssignedHallRequests[i][j] == true{
+					fsm.RunningElevator.Request[i][j]=true
 				}
-				fmt.Println("REQUEST: ", fsm.RunningElevator.Request)
 			}
 		}
+		fmt.Println("REQUEST: ", fsm.RunningElevator.Request)
+		}
+	}
 		
 	
 
