@@ -172,8 +172,6 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	go Transmitter(addr, ElevatorMessageTX) //16569
 	go Receiver(addr, ElevatorMessageRX)
 	
-	ChanLocalIP := make(chan string)
-	go Transmitter(16666, ChanLocalIP)
 
 	go func() {
 		for {
@@ -181,8 +179,6 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 			fmt.Println("ID", ID)
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
-			
-			//ChanLocalIP <- ID
 
 			time.Sleep(1 * time.Second)
 		}
