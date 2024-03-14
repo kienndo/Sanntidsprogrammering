@@ -132,14 +132,14 @@ func UpdateHallRequests(e elevio.Elevator){
 
 func SendAssignedOrders(){
 	
-	for IP, NewHallOrders := range HRAOutput{
+	for _, NewHallOrders := range HRAOutput{
 		fmt.Println("Assigned orders: ", NewHallOrders)
 		jsonData, err := json.Marshal(NewHallOrders)
 		if err != nil {
 			return 
 		}
 
-		udpAddr, err := net.ResolveUDPAddr("udp", IP) // Sends to the given IP - address
+		udpAddr, err := net.ResolveUDPAddr("udp", "10.100.23.25:8080") // Sends to the given IP - address
 		if err != nil {
 			return
 		}
@@ -167,7 +167,7 @@ func RecieveNewAssignedOrders(){
 	// for{
 	// 	select{
 	// 	case p := <- ChanMasterIDRX:
-		addr, err := net.ResolveUDPAddr("udp", p.New)
+		addr, err := net.ResolveUDPAddr("udp", "10.100.23.24:8080")
 		fmt.Println("IP: ")
 		if err != nil{
 			fmt.Println("Error resolving UDP address: ", err)
