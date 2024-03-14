@@ -82,7 +82,7 @@ func SetToPrimary() {
 
     time.Sleep(5*time.Second)
 
-    conn, err := net.Dial("udp", "10.100.23.255:29501")
+    conn, err := net.Dial("udp", "10.100.23.255:29501") //Burde kanskje egt ikke kjøre en statisk IP-adresse?
     if err != nil {
         fmt.Println("Error dialing UDP")
     }

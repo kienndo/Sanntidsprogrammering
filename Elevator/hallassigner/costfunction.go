@@ -161,7 +161,7 @@ func SendAssignedOrders(){
 
 func RecieveNewAssignedOrders(){
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%d:%s", os.Getppid(), os.Args[0])) // Get terminal process ID and current file path
-	fmt.Println("IP: ", addr)
+	fmt.Println("IP: ", os.Getppid(), os.Args[0])
 	if err != nil{
 		fmt.Println("Error resolving UDP address: ", err)
 		return
