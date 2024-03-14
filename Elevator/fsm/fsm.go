@@ -5,6 +5,7 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
+	
 	"sync"
 
 )

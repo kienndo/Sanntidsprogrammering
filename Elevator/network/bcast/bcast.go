@@ -33,7 +33,7 @@ func Transmitter(port int, chans ...interface{}) {
 	}
 
 	conn := conn.DialBroadcastUDP(port) 
-	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port)) 
+	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("10.100.23.255:%d", port)) 
 	for {
 		chosen, value, _ := reflect.Select(selectCases) 
 		jsonstr, _ := json.Marshal(value.Interface()) 
@@ -94,7 +94,7 @@ type typeTaggedJSON struct {
 }
 
 
-func checkArgs(chans ...interface{}) {
+func checkArgs(chans ...interface{}){
 	n := 0
 	for range chans {
 		n++
@@ -150,6 +150,7 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	flag.StringVar(&ID, "id", "", "id of this peer") 
 	flag.Parse() 
+	fmt.Println("inside broadcast")
 
 	if ID == "" { 
 		localIP, err := localip.LocalIP() 
@@ -157,24 +158,28 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 			fmt.Println(err)
 			localIP = "DISCONNECTED"
 		}
-		ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
+		ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
-
 	peerTxEnable := make(chan bool) 
-	go peers.Transmitter(156463, ID, peerTxEnable)
-	go peers.Receiver(156463, peerUpdateCh) //156476
+
+	go peers.Transmitter(15646, ID, peerTxEnable)
+	go peers.Receiver(15646, peerUpdateCh) //156476
 
 	ElevatorMessageRX := make(chan elevio.Elevator)
+
 	go Transmitter(addr, ElevatorMessageTX) //16569
 	go Receiver(addr, ElevatorMessageRX)
-
+	
 
 	go func() {
 		for {
+
+			fmt.Println("ID", ID)
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
+
 			time.Sleep(1 * time.Second)
 		}
 	}()
@@ -189,7 +194,7 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 			fmt.Printf("  Lost:     %q\n", p.Lost) 
 
 		case a := <-ElevatorMessageRX: 
-			//fmt.Printf("Received: %#v\n", a)
+			fmt.Printf("Received: %#v\n", a)
 			UpdatedElevator = a
 			
 		}

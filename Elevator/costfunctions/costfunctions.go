@@ -2,18 +2,19 @@ package costfunctions
 
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
-	fsm "Sanntidsprogrammering/Elevator/fsm"
-	"Sanntidsprogrammering/Elevator/network/bcast"
+	bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	peers "Sanntidsprogrammering/Elevator/network/peers"
+	//localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
+	"runtime"
 	"sync"
 	"time"
-	"runtime"
-	watchdog "Sanntidsprogrammering/Elevator/watchdog"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
+	
 )
-
 
 type HRAElevState struct {
     Behavior    string      `json:"behaviour"`
@@ -28,23 +29,27 @@ type HRAInput struct {
 
 var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
-	LastValidFloor int
-	State1 HRAElevState
-	State2 HRAElevState
-	CostMutex sync.Mutex
-	HRAElevator = fsm.RunningElevator
-	ChanHallRequests = make(chan elevio.ButtonEvent)
 	AllElevators = make(map[string]HRAElevState)
+	LastValidFloor int
+	//State1 HRAElevState
+	//State2 HRAElevState
+
+	// Master recieve channels
+	//ChanRecieveIP chan peers.PeerUpdate
+	ChanRecieveElevator chan elevio.Elevator
+	
+	// Mutex
+	HallRequestMutex sync.Mutex
+	CostMutex sync.Mutex
+	ElevatorMutex sync.Mutex
 
 	ChanElevator1 = make(chan elevio.Elevator)
 	ChanElevator2 = make(chan elevio.Elevator)
 	Address1 int = 1659
 	Address2 int = 1658
 
-	// Input = HRAInput{ // Updates in MasterRecieve
-	// 	HallRequests: 	MasterHallRequests,
-	// 	States:  AllElevators}
-
+	HRAOutput map[string][][2]bool
+	Input HRAInput
 )
 
 func InitMasterHallRequests(){
@@ -59,7 +64,15 @@ func SetLastValidFloor(ValidFloor int) {
 	LastValidFloor = ValidFloor
 }
 
-func CostFunction(Input HRAInput){
+func CostFunction(){
+
+	Input = HRAInput{
+		HallRequests: MasterHallRequests,
+		States: AllElevators,
+	}
+
+	fmt.Println("NEW INPUT:" , Input)
+
 	hraExecutable := ""
     switch runtime.GOOS {
         case "linux":   hraExecutable  = "hall_request_assigner"
@@ -84,13 +97,16 @@ func CostFunction(Input HRAInput){
     err = json.Unmarshal(ret, &output)
     if err != nil {
         fmt.Println("json.Unmarshal error: ", err)
-        return
+        return 
     }
         
     fmt.Printf("output: \n")
     for k, v := range *output {
         fmt.Printf("%6v :  %+v\n", k, v)
     }
+	HRAOutput = *output
+	
+	fmt.Println("NEW OUTPUT:" , HRAOutput)
 }	
 
 func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
@@ -101,7 +117,6 @@ func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallReques
 				chanCabRequests <- btnEvent
 			} else{
 				chanHallRequests <- btnEvent
-
 			}
 		}
 	}
@@ -123,7 +138,8 @@ func ChooseConnection() {
 		// Channel 1
 		fmt.Println("Sending to channel 1")
 		go ChannelTaken()
-		go bcast.RunBroadcast(ChanElevator1, Address1)
+		go bcast.RunBroadcast(ChanElevator1, Address1) //Kjøres bare en gang
+
 
 	} else {
 
@@ -183,67 +199,111 @@ func RecievingState(address string,state *elevio.Elevator) {
 	}
 }
 
-
-func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
-	for { 
-	select {
-		case UpdateHallRequests := <-ChanHallRequests:
-			CostMutex.Lock()
-			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
-			CostMutex.Unlock()	
+func UpdateHallRequests(e elevio.Elevator){ 
+		for i:= 0; i<elevio.N_FLOORS; i++{
+			for j:= 0; j<2; j++{
+			if(e.Request[i][j]){
+				HallRequestMutex.Lock()
+				MasterHallRequests[i][j] = true
+				HallRequestMutex.Unlock()	
+			}
 		}
 	}
 }
 
-func MasterRecieve(){
+func SendAssignedOrders(){
+	// Sends the New hall order to the given IP-address
+	for IP, NewHallOrders := range HRAOutput{
+		jsonData, err := json.Marshal(NewHallOrders)
+		if err != nil {
+			return 
+		}
+
+		udpAddr, err := net.ResolveUDPAddr("udp", IP+":8080") // CHOOSE A NEW PORT
+		if err != nil {
+			return
+		}
+
+		conn, err := net.DialUDP("udp", nil, udpAddr)
+		if err != nil {
+			return 
+		}
+		defer conn.Close()
+
+		_, err = conn.Write(jsonData)
+		if err != nil {
+			return 
+		}
+	}
+}
+
+func RecieveNewAssignedOrders(){
+	addr, err := net.ResolveUDPAddr("udp", ":8080")
+	if err != nil{
+		fmt.Println("Error resolving UDP address: ", err)
+		return
+	}
+
+	conn, err := net.ListenUDP("udp", addr)
+	if err != nil{
+		fmt.Println("Error listening for UDP packets: ", err)
+		return
+	}
+	defer conn.Close()
+
 	for{
-	select{
-	case a := <- ChanElevator1:
-		State1 := HRAElevState{
-			Behavior: elevio.EbToString(a.Behaviour),
-			Floor: a.Floor,
-			Direction: elevio.ElevioDirnToString(a.Dirn),
-			CabRequests: a.CabRequests[:],
-		}
-		AllElevators["one"] = State1
-		
-		Input1 := HRAInput{
-			HallRequests: MasterHallRequests,
-			States: AllElevators,
-		}
-				
-		fmt.Println("INPUT:", Input1)
-		CostFunction(Input1)
+		buffer := make([]byte, 1024)
+		n, _, _ := conn.ReadFromUDP(buffer)
 
-	case b := <-ChanElevator2:
-		State2 := HRAElevState{
-			Behavior: elevio.EbToString(b.Behaviour),
-			Floor: b.Floor,
-			Direction: elevio.ElevioDirnToString(b.Dirn),
-			CabRequests: b.CabRequests[:],
+		var AssignedHallRequests [][2]bool
+		if err := json.Unmarshal(buffer[:n], &AssignedHallRequests); err != nil {
+			fmt.Println("Error decoding JSON", err)
+			continue
 		}
-		AllElevators["one"] = State2
-		
-		Input2 := HRAInput{
-			HallRequests: MasterHallRequests,
-			States: AllElevators,
-		}
-				
-		fmt.Println("INPUT:", Input2)
-		CostFunction(Input2)
-	}
-}
-}
-func ReassignOrders(ElevatorUnavailable chan bool) { //tenkte å bruke denne til å sende melding til master at denne heisen er død, visste ikke hvordan jeg skulle implementere i funksjonen over
-	for {
-		select {
-		case <- ElevatorUnavailable: //hvis heisen er død 
-			//send melding til master at denne heisen er død
-			deadState := HRAElevState{ //dette gir ikke mening, vet ikke hvordan jeg løser det
-				Behavior: elevio.EbToString("EB_Dead"), //Elevator = 💀 men dette føler jeg ikke går
 
-			
+		for i := 0; i < elevio.N_FLOORS; i++{
+			for j:=0; j<2; j++{
+				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
+			}
 		}
 	}
+
 }
 
+func MasterReceive(){
+	ChanRecieveIP:= make(chan peers.PeerUpdate)
+	go bcast.Receiver(Address1, ChanElevator2)
+	go peers.Receiver(15646, ChanRecieveIP)
+	var IPaddress string
+	go func() {
+		for{
+			select{
+			case p:= <-ChanRecieveIP:
+				IPaddress = p.New //HVORDAN TAR JEG UT DENNE IPADRESSEN OG SENDER DEN UT AV FUNKSJONEN OG TIL SELECTEN UNDER
+				
+			}
+		}
+
+	}()
+
+	for{
+		select{
+		case a:= <-ChanElevator2:
+		
+			UpdateHallRequests(a)
+			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests) //Sjekk rosa markert kommentar i notability, kien
+
+			State := HRAElevState{
+				Behavior: elevio.EbToString(a.Behaviour),
+				Floor: a.Floor,
+				Direction: elevio.ElevioDirnToString(a.Dirn),
+				CabRequests: a.CabRequests[:],
+			}
+			fmt.Println("NY IPADRESSE", IPaddress)
+			ElevatorMutex.Lock()
+			AllElevators[IPaddress] = State 
+			ElevatorMutex.Unlock()
+	
+		}
+	}
+}

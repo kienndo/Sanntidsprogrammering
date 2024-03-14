@@ -3,10 +3,11 @@ package backup
 import (
 	"Sanntidsprogrammering/Elevator/costfunctions"
 	"Sanntidsprogrammering/Elevator/elevio"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
+	"Sanntidsprogrammering/Elevator/network/bcast"
 	"fmt"
 	"net"
 	"time"
-    fsm "Sanntidsprogrammering/Elevator/fsm"
 	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
@@ -33,7 +34,11 @@ func ListenForPrimary() {
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
+    //costfunctions.ChooseConnection()
+    go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1)
+   
     
+
     for {
         select {
         case <-timer.C:
@@ -69,7 +74,8 @@ func ListenForPrimary() {
         }
     }
 }
-// 
+
+
 func SetToPrimary() {
 
     time.Sleep(5*time.Second)
@@ -88,8 +94,9 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        go costfunctions.MasterRecieve()
-        
+        go costfunctions.MasterReceive()
+        costfunctions.CostFunction()
+
 
         time.Sleep(1*time.Second)
     }

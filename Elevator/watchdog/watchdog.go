@@ -26,5 +26,3 @@ func WatchdogFunc(seconds int, ElevatorUnavailable chan bool) {
 
 // hvis elevatorUnavailable <- true, må det være en case et annet sted som tar seg av dette
 // det som må skje da, er at heisen det gjelder må markeres som utilgjengelig og alle requests må sendes tilbake til master
-
-

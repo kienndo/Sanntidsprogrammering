@@ -35,12 +35,12 @@ func main() {
 	go elevio.PollFloorSensor(ChanFloors)
 	go elevio.PollObstructionSwitch(ChanObstr)
 	go costfunctions.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
-	go costfunctions.UpdateHallRequests(ChanHallRequests)
 
+	// Timer
 	go fsm.CheckForTimeout()
 
 	//Primary and backup
-	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr) //Grunnen til at den ikke kjører i backup er fordi den ikke kommer seg ut
+	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr)
 	go backup.SetToPrimary()
 
 	fsm.InitializeLights()
