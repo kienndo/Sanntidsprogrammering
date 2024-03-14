@@ -271,12 +271,17 @@ func RecieveNewAssignedOrders(){
 }
 
 func MasterReceive(){
-	peerUpdateCh := make(chan peers.PeerUpdate)
+	ChanIP:= make(chan string)
 	go bcast.Receiver(Address1, ChanElevator2)
-	go peers.Receiver(156463, peerUpdateCh )
+	go bcast.Receiver(16666, ChanIP)
 	for{
 		select{
 		case a:= <-ChanElevator2:
+			// select{ DETTE BLIR KANSKJE FEIL???? MÅ KANSKJE BRUKE PEER GREIENE
+			// case b:= <-ChanIP:
+			// 	ElevatorIP := b
+			// 	continue
+			// }
 			//fmt.Println("ANNEN HEIS: ",a)
 			UpdateHallRequests(a)
 			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests) //Sjekk rosa markert kommentar i notability, kien
@@ -288,22 +293,9 @@ func MasterReceive(){
 				CabRequests: a.CabRequests[:],
 			}
 			ElevatorMutex.Lock()
-			AllElevators["test"] = State //MÅ FINNE RIKTIG IPADRESSE GRR
+			AllElevators["heis"] = State 
 			ElevatorMutex.Unlock()
 	
 		}
 	}
-}
-
-func SetHRAInput(){
-	HallRequestMutex.Lock()
-			ElevatorMutex.Lock()
-			Input = HRAInput{
-			HallRequests: MasterHallRequests, 
-						States: AllElevators,
-
-					}
-					HallRequestMutex.Unlock()
-					ElevatorMutex.Unlock()
-					fmt.Println("INPUT:", Input)
 }

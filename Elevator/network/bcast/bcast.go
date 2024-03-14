@@ -162,21 +162,27 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	}
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
-
 	peerTxEnable := make(chan bool) 
+
 	go peers.Transmitter(156463, ID, peerTxEnable)
 	go peers.Receiver(156463, peerUpdateCh) //156476
 
 	ElevatorMessageRX := make(chan elevio.Elevator)
+
 	go Transmitter(addr, ElevatorMessageTX) //16569
 	go Receiver(addr, ElevatorMessageRX)
 	
+	ChanLocalIP := make(chan string)
+	go Transmitter(16666, ChanLocalIP)
 
 	go func() {
 		for {
-			fmt.Println("ID", ID)
+			//fmt.Println("ID", ID)
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
+			IPaddress, _ := localip.LocalIP()
+			ChanLocalIP <- IPaddress
+
 			time.Sleep(1 * time.Second)
 		}
 	}()
