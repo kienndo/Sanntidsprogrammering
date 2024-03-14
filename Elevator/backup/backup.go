@@ -114,7 +114,7 @@ func SetToPrimary() {
             
         }
         hallassigner.CostFunction()
-        MasterSendID()
+        //MasterSendID()
         hallassigner.SendAssignedOrders()
 
         time.Sleep(1*time.Second)

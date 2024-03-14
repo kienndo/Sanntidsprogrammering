@@ -160,13 +160,13 @@ func SendAssignedOrders(){
 }
 
 func RecieveNewAssignedOrders(){
-	var ChanMasterIDRX chan peers.PeerUpdate
+	// var ChanMasterIDRX chan peers.PeerUpdate
 
-	peers.Receiver(PortMasterID, ChanMasterIDRX)
+	// peers.Receiver(PortMasterID, ChanMasterIDRX)
 
-	for{
-		select{
-		case p := <- ChanMasterIDRX:
+	// for{
+	// 	select{
+	// 	case p := <- ChanMasterIDRX:
 		addr, err := net.ResolveUDPAddr("udp", p.New)
 		fmt.Println("IP: ")
 		if err != nil{
@@ -199,8 +199,8 @@ func RecieveNewAssignedOrders(){
 				}
 			}
 		}
-	}
-}
+	//}
+//}
 
 func MasterReceive(){
 	
