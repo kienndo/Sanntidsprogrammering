@@ -165,7 +165,7 @@ func RecieveNewAssignedOrders(){
 		fmt.Println("Error resolving UDP address: ", err)
 		return
 	}
-	//fmt.Println("IP: ", addr)
+	fmt.Println("IP: ", addr)
 
 
 	conn, err := net.ListenUDP("udp", addr)

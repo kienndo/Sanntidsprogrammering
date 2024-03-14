@@ -18,7 +18,7 @@ import (
 func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
 
     
-    conn, err := net.ListenPacket("udp", ":29500")
+    conn, err := net.ListenPacket("udp", ":29501")
     if err != nil {
         fmt.Println("Error listening")
     }
@@ -82,7 +82,7 @@ func SetToPrimary() {
 
     time.Sleep(5*time.Second)
 
-    conn, err := net.Dial("udp", "10.100.23.255:29500")
+    conn, err := net.Dial("udp", "10.100.23.24:29501")
     if err != nil {
         fmt.Println("Error dialing UDP")
     }
