@@ -10,9 +10,7 @@ import (
 	"net"
 	"os/exec"
 	"runtime"
-	"sync"
-
-	
+	"sync"	
 )
 
 type HRAElevState struct {
@@ -32,9 +30,11 @@ var(
 	AllElevators = make(map[string]HRAElevState)
 	LastValidFloor int
 
-	// Master recieve channel
+	// Master channels
 	ChanElevatorTX = make(chan elevio.Elevator)
 	ChanElevatorRX = make(chan elevio.Elevator)
+	ChanMasterHallRequestsTX = make(chan [elevio.N_FLOORS][2]bool)
+	ChanMasterHallRequestsRX = make(chan [elevio.N_FLOORS][2]bool)
 	
 	// Mutex
 	HallRequestMutex sync.Mutex
@@ -43,6 +43,7 @@ var(
 
 	// Port addresses
 	ElevatorTransmitPort int = 1659
+	MasterHallRequestsPort int = 1658
 
 	// Cost function - input and output
 	HRAOutput map[string][][2]bool
@@ -223,3 +224,27 @@ func MasterReceive(){
 		}
 	}
 }
+
+func MasterSendHallLights(){ // Må puttes i master, teste ved å bare sette masterhallrequests til en konstant matrise og bare teste at ting lyser
+	
+	ChanMasterHallRequestsTX <- MasterHallRequests
+	bcast.Transmitter(MasterHallRequestsPort, ChanMasterHallRequestsTX)
+}
+
+func UpdateHallLights(){ // Må puttes i primary og master
+
+	bcast.Receiver(MasterHallRequestsPort, ChanMasterHallRequestsRX)
+	for {
+		select {
+		case a := <-ChanMasterHallRequestsRX:
+			for floor := 0; floor < elevio.N_FLOORS; floor++ {
+				for btn := 0; btn < 2; btn++ {
+					if a[floor][btn] == true {
+						elevio.SetButtonLamp(elevio.ButtonType(btn), floor, true)
+					}
+				}
+			}
+		}
+	}
+}
+
