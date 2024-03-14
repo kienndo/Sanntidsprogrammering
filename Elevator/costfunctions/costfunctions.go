@@ -204,22 +204,23 @@ func UpdateHallRequests(e elevio.Elevator){
 func MasterReceive(){
 	
 	peers.Receiver(156463, ChanRecieveIP) //Riktig port?
+	bcast.Receiver(Address1, ChanRecieveElevator)
 	
 	for {
 		select {
 		case a:= <-ChanRecieveIP:
-			fmt.Println("MASTER RECIEVING")
-			IPaddress := a.New
-			bcast.Receiver(Address1, ChanRecieveElevator)
-			select {
-				case b:= <-ChanRecieveElevator:
+			fmt.Println("MASTER RECIEVING", a)
+			//IPaddress := a.New
+			
+	
+		case b:= <-ChanRecieveElevator:
 					State := HRAElevState{
 						Behavior: elevio.EbToString(b.Behaviour),
 						Floor: b.Floor,
 						Direction: elevio.ElevioDirnToString(b.Dirn),
 						CabRequests: b.CabRequests[:],
 					}
-					AllElevators[IPaddress] = State
+					AllElevators["test"] = State
 					UpdateHallRequests(b)
 							
 					Input = HRAInput{
@@ -231,7 +232,7 @@ func MasterReceive(){
 					}
 				}
 			}
-}
+
 
 
 func SendAssignedOrders(){
