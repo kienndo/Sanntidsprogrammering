@@ -298,6 +298,7 @@ func MasterReceive(){
 				Direction: elevio.ElevioDirnToString(a.Dirn),
 				CabRequests: a.CabRequests[:],
 			}
+			fmt.Println("NY IPADRESSE", IPaddress)
 			ElevatorMutex.Lock()
 			AllElevators[IPaddress] = State 
 			ElevatorMutex.Unlock()
