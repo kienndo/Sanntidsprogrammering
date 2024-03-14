@@ -42,6 +42,7 @@ var(
 	Address2 int = 1658
 
 	HRAOutput map[string][][2]bool
+	Input HRAInput
 )
 
 func InitMasterHallRequests(){
@@ -56,7 +57,7 @@ func SetLastValidFloor(ValidFloor int) {
 	LastValidFloor = ValidFloor
 }
 
-func CostFunction(Input HRAInput){
+func CostFunction(){
 	hraExecutable := ""
     switch runtime.GOOS {
         case "linux":   hraExecutable  = "hall_request_assigner"
@@ -207,13 +208,13 @@ func MasterRecieve(){
 		ElevatorIP, _ := localip.LocalIP()
 		AllElevators[ElevatorIP] = State1
 		
-		Input1 := HRAInput{
+		Input = HRAInput{
 			HallRequests: MasterHallRequests,
 			States: AllElevators,
 		}
 				
-		fmt.Println("INPUT:", Input1)
-		CostFunction(Input1)
+		fmt.Println("INPUT:", Input)
+		CostFunction()
 
 	case b := <-ChanElevator2:
 		State2 := HRAElevState{
@@ -225,13 +226,13 @@ func MasterRecieve(){
 		ElevatorIP, _ := localip.LocalIP()
 		AllElevators[ElevatorIP] = State2
 		
-		Input2 := HRAInput{
+		Input = HRAInput{
 			HallRequests: MasterHallRequests,
 			States: AllElevators,
 		}
 				
-		fmt.Println("INPUT:", Input2)
-		CostFunction(Input2)
+		fmt.Println("INPUT:", Input)
+		CostFunction()
 	}
 }
 }
