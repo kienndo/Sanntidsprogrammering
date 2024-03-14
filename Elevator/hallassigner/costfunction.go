@@ -68,8 +68,6 @@ func CostFunction(){
 		States: AllElevators,
 	}
 
-	fmt.Println("NEW INPUT:" , Input)
-
 	hraExecutable := ""
     switch runtime.GOOS {
         case "linux":   hraExecutable  = "hall_request_assigner"
@@ -103,7 +101,6 @@ func CostFunction(){
     }
 	HRAOutput = *output
 	
-	fmt.Println("NEW OUTPUT:" , HRAOutput)
 }	
 
 func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
@@ -118,7 +115,6 @@ func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallReques
 			}
 		}
 }
-
 
 func UpdateHallRequests(e elevio.Elevator){ 
 		for i:= 0; i<elevio.N_FLOORS; i++{
