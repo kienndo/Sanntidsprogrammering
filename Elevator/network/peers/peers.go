@@ -75,15 +75,15 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 		} 
 	
 		if updated {
-			p.Peers = make([]string, 0, len(lastSeen)) 
+			p.Peers = make([]string, 0, len(lastSeen))
 
-			for k, _ := range lastSeen {
-				p.Peers = append(p.Peers, k) 
+			for k := range lastSeen {
+				p.Peers = append(p.Peers, k)
 			}
 
-			sort.Strings(p.Peers) 
-			sort.Strings(p.Lost) 
-			peerUpdateCh <- p 
+			sort.Strings(p.Peers)
+			sort.Strings(p.Lost)
+			peerUpdateCh <- p
 		}
 	}
 }

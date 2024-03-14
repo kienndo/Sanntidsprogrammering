@@ -37,7 +37,6 @@ func ListenForPrimary() {
     //costfunctions.ChooseConnection()
     go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1)
    
-    
 
     for {
         select {

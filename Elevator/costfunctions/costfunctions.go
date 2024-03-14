@@ -3,7 +3,6 @@ package costfunctions
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
-	peers "Sanntidsprogrammering/Elevator/network/peers"
 	//localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
