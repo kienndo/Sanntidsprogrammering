@@ -6,7 +6,6 @@ import (
 	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	localip "Sanntidsprogrammering/Elevator/network/localip"
-	"Sanntidsprogrammering/Elevator/network/peers"
 	"fmt"
 	"math/rand"
 	"net"
