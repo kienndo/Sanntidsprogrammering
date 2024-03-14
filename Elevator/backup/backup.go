@@ -145,7 +145,7 @@ func MasterSendID(){
 			fmt.Println(err)
 			localIP = "DISCONNECTED"
 		}
-		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
+		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getppid())
 	}
     fmt.Println("MASTERID: ", MasterID)
     go bcast.Transmitter(PortMasterID, ChanMasterIDTX)

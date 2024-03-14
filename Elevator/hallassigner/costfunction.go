@@ -5,14 +5,15 @@ import (
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
-	//localip "Sanntidsprogrammering/Elevator/network/localip"
+	"time"
+	"os"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
 	"runtime"
 	"sync"
-	
 )
 
 type HRAElevState struct {
@@ -151,23 +152,18 @@ func SendAssignedOrders(){
 
 func RecieveNewAssignedOrders(){
 	fmt.Println("TEST")
-	ChanMasterIDRX := make(chan string)
 	var MasterID string
-
-	go bcast.Receiver(16666, ChanMasterIDRX)
-	fmt.Println("TESTER")
-	go func(){
-		for {
-			select{
-			case p := <-ChanMasterIDRX:
-				MasterID = p
-				
-			}
+	//MasterID := GetMasterIP()
+	if MasterID == "" { 
+		localIP, err := localip.LocalIP() 
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
 		}
-		
-	}()
-	fmt.Println("IPMOTTAK: ", MasterID)
-	addr, err := net.ResolveUDPAddr("udp", MasterID)
+		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
+	}
+	fmt.Println("IPUUUUUT: ", MasterID)
+	addr, err := net.ResolveUDPAddr("udp", MasterID) // Denne vil ikke ta inn MASTERID?
 	
 		if err != nil{
 			fmt.Println("Error resolving UDP address: ", err)
@@ -236,7 +232,7 @@ func MasterReceive(){
 				Direction: elevio.ElevioDirnToString(a.Dirn),
 				CabRequests: a.CabRequests[:],
 			}
-			//fmt.Println("NY IPADRESSE", IPaddress)
+
 			ElevatorMutex.Lock()
 			AllElevators[IPaddress] = State 
 			ElevatorMutex.Unlock()
@@ -263,6 +259,19 @@ func UpdateHallLights(){
 					}
 				}
 			}
+		}
+	}
+}
+
+func GetMasterIP() string {
+	ChanMasterIDRX := make(chan string)
+
+	go bcast.Receiver(16666, ChanMasterIDRX)
+	for {
+		select{
+		case p := <-ChanMasterIDRX:
+			time.Sleep(1*time.Second)
+			return p
 		}
 	}
 }
