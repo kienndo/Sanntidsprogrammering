@@ -2,15 +2,16 @@ package hallassigner
 
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
-	fsm "Sanntidsprogrammering/Elevator/fsm"
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"runtime"
-	"sync"	
+	"sync"
 )
 
 type HRAElevState struct {
@@ -130,7 +131,9 @@ func UpdateHallRequests(e elevio.Elevator){
 }
 
 func SendAssignedOrders(){
+	
 	for IP, NewHallOrders := range HRAOutput{
+		fmt.Println("Assigned orders: ", NewHallOrders)
 		jsonData, err := json.Marshal(NewHallOrders)
 		if err != nil {
 			return 
@@ -151,11 +154,12 @@ func SendAssignedOrders(){
 		if err != nil {
 			return 
 		}
+
 	}
 }
 
 func RecieveNewAssignedOrders(){
-	addr, err := net.ResolveUDPAddr("udp", ":8080")// HVORDAN HENTE IPADDRESSE
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%s", os.Getpid()))
 	if err != nil{
 		fmt.Println("Error resolving UDP address: ", err)
 		return
@@ -183,6 +187,7 @@ func RecieveNewAssignedOrders(){
 				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
 			}
 		}
+		fmt.Println("HEIS-REQUEST: ", fsm.RunningElevator.Request)
 	}
 }
 

@@ -38,6 +38,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
+    go hallassigner.RecieveNewAssignedOrders()
    
     // Run backup elevator too
     for {
@@ -87,6 +88,7 @@ func SetToPrimary() {
     }
 
     defer conn.Close()
+
     
     for {
         _, err := conn.Write([]byte("Primary alive"))
@@ -109,6 +111,7 @@ func SetToPrimary() {
             
         }
         hallassigner.CostFunction()
+        hallassigner.SendAssignedOrders()
 
         time.Sleep(1*time.Second)
     }
