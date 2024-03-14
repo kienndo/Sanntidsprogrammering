@@ -202,11 +202,13 @@ func UpdateHallRequests(e elevio.Elevator){
 }
 
 func MasterReceive(){
-
+	
 	peers.Receiver(156463, ChanRecieveIP) //Riktig port?
+	
 	for {
 		select {
 		case a:= <-ChanRecieveIP:
+			fmt.Println("MASTER RECIEVING")
 			IPaddress := a.New
 			bcast.Receiver(Address1, ChanRecieveElevator)
 			select {
