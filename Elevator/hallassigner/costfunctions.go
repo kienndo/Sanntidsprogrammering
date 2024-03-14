@@ -1,4 +1,4 @@
-package costfunctions
+package hallassigner
 
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
@@ -11,7 +11,7 @@ import (
 	"os/exec"
 	"runtime"
 	"sync"
-	"time"
+
 	
 )
 
@@ -40,8 +40,9 @@ var(
 	HallRequestMutex sync.Mutex
 	CostMutex sync.Mutex
 	ElevatorMutex sync.Mutex
-	Address1 int = 1659
-	Address2 int = 1658
+
+	// Used port addresses
+	ElevatorTransmitPort int = 1659
 
 	// Cost function - input and output
 	HRAOutput map[string][][2]bool
@@ -117,83 +118,6 @@ func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallReques
 		}
 	}
 
-func ChooseConnection() {
-	// Sjekker om channel 1 er ledig
-	conn, err := net.ListenPacket("udp",":29503")
-	if err != nil {
-		fmt.Println("Error listening to channel")
-	}
-	defer conn.Close()
-
-	buffer := make([]byte, 1024)
-	conn.SetReadDeadline(time.Now().Add(3*time.Second))
-	_, _, err = conn.ReadFrom(buffer)
-
-	if err != nil {
-
-		// Channel 1
-		fmt.Println("Sending to channel 1")
-		go ChannelTaken()
-		go bcast.RunBroadcast(ChanElevator1, Address1) //Kjøres bare en gang
-
-
-	} else {
-
-		// Channel 2
-		fmt.Println("sending to channel 2")
-		go bcast.RunBroadcast(ChanElevator2, Address2)
-	}
-	time.Sleep(1*time.Millisecond)
-}
-
-func ChannelTaken() {
-	for {
-		conn, err := net.Dial("udp", "10.100.23.255:29503")
-		if err != nil {
-			fmt.Println("Error dialing udp")
-		}
-		defer conn.Close()
-		_, err = conn.Write([]byte("1"))
-
-		time.Sleep(1*time.Second)
-	}
-}
-
-func RecievingState(address string,state *elevio.Elevator) {
-
-	addr, err := net.ResolveUDPAddr("udp", address)
-	if err != nil {
-		fmt.Println("failed to listen to udp mip")
-		return
-	}
-
-	conn, err := net.ListenUDP("udp", addr)
-	if err != nil {
-		fmt.Println("Failed to listen from UDP")
-		return
-	}
-	defer conn.Close()
-
-	buffer := make([]byte, 1024)
-	for {
-		n, _, err := conn.ReadFromUDP(buffer)
-		if err != nil{
-			fmt.Println("Failed to read")
-			continue
-		}
-
-		var newState elevio.Elevator
-		err = json.Unmarshal(buffer[:n],&newState)
-		if err != nil {
-			fmt.Println("Failed to deserialize")
-			continue
-		}
-		
-		CostMutex.Lock()
-		*state = newState
-		CostMutex.Unlock()
-	}
-}
 
 func UpdateHallRequests(e elevio.Elevator){ 
 		for i:= 0; i<elevio.N_FLOORS; i++{
@@ -268,14 +192,14 @@ func RecieveNewAssignedOrders(){
 
 func MasterReceive(){
 	ChanRecieveIP:= make(chan peers.PeerUpdate)
-	go bcast.Receiver(Address1, ChanElevator2)
+	go bcast.Receiver(ElevatorTransmitPort, ChanElevator2)
 	go peers.Receiver(15646, ChanRecieveIP)
 	var IPaddress string
 	go func() {
 		for{
 			select{
 			case p:= <-ChanRecieveIP:
-				IPaddress = p.New //HVORDAN TAR JEG UT DENNE IPADRESSEN OG SENDER DEN UT AV FUNKSJONEN OG TIL SELECTEN UNDER
+				IPaddress = p.New
 				
 			}
 		}

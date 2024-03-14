@@ -1,17 +1,18 @@
 package backup
 
 import (
-	"Sanntidsprogrammering/Elevator/costfunctions"
-	"Sanntidsprogrammering/Elevator/elevio"
+	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
+	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	"Sanntidsprogrammering/Elevator/network/bcast"
-	"Sanntidsprogrammering/Elevator/network/localip"
+	bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
 	"fmt"
 	"net"
 	"time"
     "os"
-	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
+
+// Functions for process pairs and indicating primary and backup
 
 func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
     conn, err := net.ListenPacket("udp", ":29500")
@@ -23,7 +24,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
     buffer := make([]byte, 1024)
     conn.SetReadDeadline(time.Now().Add(5*time.Second))
 
-    _, _, err = conn.ReadFrom(buffer) // If you read a message, you fall out of the loop
+    _, _, err = conn.ReadFrom(buffer) 
     if err != nil {
         return
     }
@@ -31,13 +32,9 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
     fmt.Println("Backup started")
 
     timer := time.NewTimer(10*time.Second)
-
-    // Begynner å sende states til primary
-    //costfunctions.ChooseConnection()
-    go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1) //Bytte navn på disse adressene
+    go bcast.RunBroadcast(hallassigner.ChanElevator1, hallassigner.ElevatorTransmitPort) //Bytte navn på disse adressene
    
-    
-    // Run backup-elevator
+    // Run backup elevator too
     for {
         select {
         case <-timer.C:
@@ -46,11 +43,11 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
            
         case a := <-ChanButtons:
             fmt.Printf("Order: %+v\n", a)  
-            fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
+            fmt.Println("MASTERHALLREQUESTS", hallassigner.MasterHallRequests)
             fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
            
         case a := <-ChanFloors:
-            costfunctions.SetLastValidFloor(a)
+            hallassigner.SetLastValidFloor(a)
             fmt.Printf("Floor: %+v\n", a)
             fsm.FsmOnFloorArrival(a)
                     
@@ -86,24 +83,24 @@ func SetToPrimary() {
 
     defer conn.Close()
     
-    for { // Loops until it dies
+    for {
         _, err := conn.Write([]byte("Primary alive"))
         if err != nil {
             fmt.Println("error sending in primary")
         }
 
         fmt.Println("Doing primarystuff")
-        go costfunctions.MasterReceive()
+        go hallassigner.MasterReceive()
         MasterIPAddress, _ := localip.LocalIP()
         MasterID := fmt.Sprintf("peer-%s-%d", MasterIPAddress, os.Getpid())
-        costfunctions.AllElevators[MasterID] = costfunctions.HRAElevState{
+        hallassigner.AllElevators[MasterID] = hallassigner.HRAElevState{
                 Behavior:   elevio.EbToString(fsm.RunningElevator.Behaviour),
                 Floor:      fsm.RunningElevator.Floor, 
                 Direction:  elevio.ElevioDirnToString(fsm.RunningElevator.Dirn),   
                 CabRequests: fsm.RunningElevator.CabRequests[:],
             
         }
-        costfunctions.CostFunction()
+        hallassigner.CostFunction()
 
         time.Sleep(1*time.Second)
     }

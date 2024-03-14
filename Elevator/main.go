@@ -3,10 +3,9 @@ package main
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
-	"fmt"
+	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
 	backup "Sanntidsprogrammering/Elevator/backup"
-	//bcast "Sanntidsprogrammering/Elevator/network/bcast"
+	"fmt"
 )
 
 func main() {
@@ -14,10 +13,11 @@ func main() {
 	//Initialization
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
-	costfunctions.InitMasterHallRequests()
+	hallassigner.InitMasterHallRequests()
 	if elevio.GetFloor() == -1 {
 		fsm.FsmOnInitBetweenFloors()
 	}
+	fsm.InitializeLights()
 
 	//Creating channels
 	ChanButtons := make(chan elevio.ButtonEvent)
@@ -30,7 +30,7 @@ func main() {
 	go elevio.PollButtons(ChanButtons)
 	go elevio.PollFloorSensor(ChanFloors)
 	go elevio.PollObstructionSwitch(ChanObstr)
-	go costfunctions.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
+	go hallassigner.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
 
 	// Timer
 	go fsm.CheckForTimeout()
@@ -39,20 +39,18 @@ func main() {
 	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr)
 	go backup.SetToPrimary()
 
-	fsm.InitializeLights()
-
-	for { // Put into function later?
+	// Run elevator
+	for {
 		
 		select {
 		case a := <-ChanButtons:
 			fmt.Printf("Order: %+v\n", a)
 		
-			fmt.Println("MASTERHALLREQUESTS", costfunctions.MasterHallRequests)
+			fmt.Println("MASTERHALLREQUESTS", hallassigner.MasterHallRequests)
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 
-			
 		case a := <-ChanFloors:
-			costfunctions.SetLastValidFloor(a)
+			hallassigner.SetLastValidFloor(a)
 			fmt.Printf("Floor: %+v\n", a)
 			fsm.FsmOnFloorArrival(a)
 			

@@ -10,6 +10,7 @@ We were unsuccessful in implementing the code for taking care of disconnections.
 
 # TO DO LIST
 - Skru ned tiden på master/backup og fyll ut tiden i README
+- Jeg tror ikke den lagrer MasterHallRequests dersom den faller ut! (Se på gammel kode fra backup, må browse gammel githistorie, jeg har slettet det her)
 - Oppdatere MasterHallRequests riktig at betjente ordre fjernes når den regner ut
 - Lage funksjoner for lys
 - Fikse funksjonene for å assigne ordre(hvordan IP legges inn, må kanskje fjerne at det står "peer-" foran og ta ut riktig verdi)
@@ -60,6 +61,86 @@ We were unsuccessful in implementing the code for taking care of disconnections.
         fmt.Println("Error:", err)
         return
     }
+    }
+
+## Andre funksjoner vi ikke bruker:
+
+    func ChooseConnection() {
+	// Sjekker om channel 1 er ledig
+	conn, err := net.ListenPacket("udp",":29503")
+	if err != nil {
+		fmt.Println("Error listening to channel")
+	}
+	defer conn.Close()
+
+	buffer := make([]byte, 1024)
+	conn.SetReadDeadline(time.Now().Add(3*time.Second))
+	_, _, err = conn.ReadFrom(buffer)
+
+	if err != nil {
+
+		// Channel 1
+		fmt.Println("Sending to channel 1")
+		go ChannelTaken()
+		go bcast.RunBroadcast(ChanElevator1, Address1) //Kjøres bare en gang
+
+
+	} else {
+
+		// Channel 2
+		fmt.Println("sending to channel 2")
+		go bcast.RunBroadcast(ChanElevator2, Address2)
+	}
+	time.Sleep(1*time.Millisecond)
+    }
+
+    func ChannelTaken() {
+	for {
+		conn, err := net.Dial("udp", "10.100.23.255:29503")
+		if err != nil {
+			fmt.Println("Error dialing udp")
+		}
+		defer conn.Close()
+		_, err = conn.Write([]byte("1"))
+
+		time.Sleep(1*time.Second)
+	}
+    }
+
+    func RecievingState(address string,state *elevio.Elevator) {
+
+	addr, err := net.ResolveUDPAddr("udp", address)
+	if err != nil {
+		fmt.Println("failed to listen to udp mip")
+		return
+	}
+
+	conn, err := net.ListenUDP("udp", addr)
+	if err != nil {
+		fmt.Println("Failed to listen from UDP")
+		return
+	}
+	defer conn.Close()
+
+	buffer := make([]byte, 1024)
+	for {
+		n, _, err := conn.ReadFromUDP(buffer)
+		if err != nil{
+			fmt.Println("Failed to read")
+			continue
+		}
+
+		var newState elevio.Elevator
+		err = json.Unmarshal(buffer[:n],&newState)
+		if err != nil {
+			fmt.Println("Failed to deserialize")
+			continue
+		}
+		
+		CostMutex.Lock()
+		*state = newState
+		CostMutex.Unlock()
+	}
     }
 
 
