@@ -132,7 +132,7 @@ func SleepRandomDuration() {
 
 func MasterSendID(){
     var MasterID string
-    var ChanMasterIDTX chan bool
+    var ChanMasterIDTX chan string
     if MasterID == "" { 
 		localIP, err := localip.LocalIP() 
 		if err != nil {
@@ -141,5 +141,6 @@ func MasterSendID(){
 		}
 		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
 	}
-    peers.Transmitter(PortMasterID, MasterID, ChanMasterIDTX)
+    ChanMasterIDTX <- MasterID
+    bcast.Transmitter(PortMasterID, ChanMasterIDTX)
 }
