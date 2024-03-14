@@ -91,7 +91,6 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1)
         go costfunctions.MasterReceive()
         costfunctions.CostFunction()
 
