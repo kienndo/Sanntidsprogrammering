@@ -65,6 +65,12 @@ func SetLastValidFloor(ValidFloor int) {
 }
 
 func CostFunction(){
+
+	Input = HRAInput{
+		HallRequests: MasterHallRequests,
+		States: AllElevators,
+	}
+	
 	hraExecutable := ""
     switch runtime.GOOS {
         case "linux":   hraExecutable  = "hall_request_assigner"
@@ -203,40 +209,6 @@ func UpdateHallRequests(e elevio.Elevator){
 	}
 }
 
-func MasterReceive(){
-	
-	peers.Receiver(156463, ChanRecieveIP) //Riktig port?
-	bcast.Receiver(Address1, ChanRecieveElevator)
-	
-	for {
-		select {
-		case a:= <-ChanRecieveIP:
-			fmt.Println("MASTER RECIEVING", a)
-			//IPaddress := a.New
-			
-	
-		case b:= <-ChanRecieveElevator:
-					State := HRAElevState{
-						Behavior: elevio.EbToString(b.Behaviour),
-						Floor: b.Floor,
-						Direction: elevio.ElevioDirnToString(b.Dirn),
-						CabRequests: b.CabRequests[:],
-					}
-					AllElevators["test"] = State
-					UpdateHallRequests(b)
-							
-					Input = HRAInput{
-					HallRequests: MasterHallRequests, 
-								States: AllElevators,
-
-							}
-							fmt.Println("INPUT:", Input)
-					}
-				}
-			}
-
-
-
 func SendAssignedOrders(){
 	// Sends the New hall order to the given IP-address
 	for IP, NewHallOrders := range HRAOutput{
@@ -296,7 +268,7 @@ func RecieveNewAssignedOrders(){
 
 }
 
-func MasterTest(){
+func MasterReceive(){
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	go bcast.Receiver(Address1, ChanElevator2)
 	go peers.Receiver(156463, peerUpdateCh )
@@ -316,8 +288,13 @@ func MasterTest(){
 			ElevatorMutex.Lock()
 			AllElevators["test"] = State //MÅ FINNE RIKTIG IPADRESSE GRR
 			ElevatorMutex.Unlock()
-			
-			HallRequestMutex.Lock()
+	
+		}
+	}
+}
+
+func SetHRAInput(){
+	HallRequestMutex.Lock()
 			ElevatorMutex.Lock()
 			Input = HRAInput{
 			HallRequests: MasterHallRequests, 
@@ -327,14 +304,4 @@ func MasterTest(){
 					HallRequestMutex.Unlock()
 					ElevatorMutex.Unlock()
 					fmt.Println("INPUT:", Input)
-			
-		
-
-
-		case b:= <-peerUpdateCh:
-			fmt.Println("IP PÅ ANNEN HEIS: ", b)
-
-
-		}
-	}
 }
