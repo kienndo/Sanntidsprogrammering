@@ -5,6 +5,7 @@ import (
 	"Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	"Sanntidsprogrammering/Elevator/network/bcast"
+	"Sanntidsprogrammering/Elevator/network/localip"
 	"fmt"
 	"net"
 	"time"
@@ -32,10 +33,10 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     // Begynner å sende states til primary
     //costfunctions.ChooseConnection()
-    go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1)
+    go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1) //Bytte navn på disse adressene
    
     
-
+    // Run backup-elevator
     for {
         select {
         case <-timer.C:
@@ -92,6 +93,14 @@ func SetToPrimary() {
 
         fmt.Println("Doing primarystuff")
         go costfunctions.MasterReceive()
+        MasterIPAddress, _ := localip.LocalIP()
+        costfunctions.AllElevators[MasterIPAddress] = costfunctions.HRAElevState{
+                Behavior:   elevio.EbToString(fsm.RunningElevator.Behaviour),
+                Floor:      fsm.RunningElevator.Floor, 
+                Direction:  elevio.ElevioDirnToString(fsm.RunningElevator.Dirn),   
+                CabRequests: fsm.RunningElevator.CabRequests[:],
+            
+        }
         costfunctions.CostFunction()
 
 

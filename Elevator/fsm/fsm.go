@@ -23,6 +23,7 @@ var (
 			DoorOpenDuration:    3.0,
 			ClearRequestVariant: elevio.CV_All,
 		},
+		CabRequests: [elevio.N_FLOORS]bool{false, false, false, false},
 	}
 	ObstructionIndicator bool
 	OrderMutex sync.Mutex
