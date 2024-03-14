@@ -195,9 +195,9 @@ func UpdateHallRequests(e elevio.Elevator){
 		for i:= 0; i<elevio.N_FLOORS; i++{
 			for j:= 0; j<2; j++{
 			if(e.Request[i][j]){
-				CostMutex.Lock()
+				HallRequestMutex.Lock()
 				MasterHallRequests[i][j] = true
-				CostMutex.Unlock()	
+				HallRequestMutex.Unlock()	
 			}
 		}
 	}
@@ -316,14 +316,17 @@ func MasterTest(){
 			ElevatorMutex.Lock()
 			AllElevators["test"] = State //MÅ FINNE RIKTIG IPADRESSE GRR
 			ElevatorMutex.Unlock()
-			fmt.Println("STATE FRA ANNEN HEIS: ", AllElevators)
-					
-			// Input = HRAInput{
-			// HallRequests: MasterHallRequests, 
-			// 			States: AllElevators,
+			
+			HallRequestMutex.Lock()
+			ElevatorMutex.Lock()
+			Input = HRAInput{
+			HallRequests: MasterHallRequests, 
+						States: AllElevators,
 
-			// 		}
-			// 		fmt.Println("INPUT:", Input)
+					}
+					HallRequestMutex.Unlock()
+					ElevatorMutex.Unlock()
+					fmt.Println("INPUT:", Input)
 			
 		
 
