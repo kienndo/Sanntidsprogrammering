@@ -10,12 +10,14 @@ import (
 	"net"
 	"time"
     "os"
+    "math/rand"
 )
 
 // Functions for process pairs and indicating primary and backup
 
 func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
 
+    
     conn, err := net.ListenPacket("udp", ":29500")
     if err != nil {
         fmt.Println("Error listening")
@@ -27,20 +29,24 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     _, _, err = conn.ReadFrom(buffer) 
     if err != nil {
+
+        fmt.Println("Becoming primary")
         return
     }
 
     fmt.Println("Backup started")
 
-    timer := time.NewTimer(10*time.Second)
+    timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
    
     // Run backup elevator too
     for {
         select {
         case <-timer.C:
-            fmt.Println("Timeout expired, becoming primary")
-            return
+
+            SleepRandomDuration()
+            //fmt.Println("Timeout expired, becoming primary")
+            ListenForPrimary(ChanButtons, ChanFloors, ChanObstr)
            
         case a := <-ChanButtons:
             fmt.Printf("Order: %+v\n", a)  
@@ -65,7 +71,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
             if !timer.Stop() {
                 <-timer.C
             }
-            timer.Reset(10 * time.Second)
+            timer.Reset(2* time.Second)
         }
     }
 }
@@ -90,8 +96,11 @@ func SetToPrimary() {
 
         fmt.Println("Doing primarystuff")
         go hallassigner.MasterReceive()
+
+        hallassigner.UpdateHallRequests(fsm.RunningElevator)
+        fmt.Println("MASTERHALLREQUESTS: ", hallassigner.MasterHallRequests)
         MasterIPAddress, _ := localip.LocalIP()
-        MasterID := fmt.Sprintf("peer-%s-%d", MasterIPAddress, os.Getpid())
+        MasterID := fmt.Sprintf("%s:%d", MasterIPAddress, os.Getpid())
         hallassigner.AllElevators[MasterID] = hallassigner.HRAElevState{
                 Behavior:   elevio.EbToString(fsm.RunningElevator.Behaviour),
                 Floor:      fsm.RunningElevator.Floor, 
@@ -103,4 +112,13 @@ func SetToPrimary() {
 
         time.Sleep(1*time.Second)
     }
+}
+
+func SleepRandomDuration() {
+
+    rand.Seed(time.Now().UnixNano())
+    duration := time.Duration(rand.Intn(5))*time.Second
+
+    time.Sleep(duration)
+
 }

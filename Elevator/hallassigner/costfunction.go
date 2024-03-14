@@ -122,7 +122,7 @@ func UpdateHallRequests(e elevio.Elevator){
 			for j:= 0; j<2; j++{
 			if(e.Request[i][j]){
 				HallRequestMutex.Lock()
-				MasterHallRequests[i][j] = true
+				MasterHallRequests[i][j] = true 
 				HallRequestMutex.Unlock()	
 			}
 		}
@@ -187,6 +187,7 @@ func RecieveNewAssignedOrders(){
 }
 
 func MasterReceive(){
+	
 	ChanRecieveIP:= make(chan peers.PeerUpdate)
 	var IPaddress string
 
@@ -208,7 +209,7 @@ func MasterReceive(){
 		case a:= <-ChanElevatorRX:
 		
 			UpdateHallRequests(a)
-			//fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests)
+			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests)
 
 			State := HRAElevState{
 				Behavior: elevio.EbToString(a.Behaviour),

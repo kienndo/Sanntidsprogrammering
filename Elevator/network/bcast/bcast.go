@@ -159,7 +159,8 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 			fmt.Println(err)
 			localIP = "DISCONNECTED"
 		}
-		ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
+		ID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
+		fmt.Println("ID: ", localIP)
 	}
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
