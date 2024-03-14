@@ -174,7 +174,7 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 
 	go func() {
 		for {
-			fmt.Println("kæser kien")
+			fmt.Println("ID", ID)
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
 			time.Sleep(1 * time.Second)
