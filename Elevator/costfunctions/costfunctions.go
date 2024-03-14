@@ -296,11 +296,17 @@ func RecieveNewAssignedOrders(){
 }
 
 func MasterTest(){
+	peerUpdateCh := make(chan peers.PeerUpdate)
 	go bcast.Receiver(Address1, ChanElevator2)
+	go peers.Receiver(156463, peerUpdateCh )
 	for{
 		select{
 		case a:= <-ChanElevator2:
-			fmt.Println("HEIS FRA BACKUP: ",a)
+			fmt.Println("ANNEN HEIS: ",a)
+
+		case b:= <-peerUpdateCh:
+			fmt.Println("IP PÅ ANNEN HEIS: ", b)
+
 
 		}
 	}
