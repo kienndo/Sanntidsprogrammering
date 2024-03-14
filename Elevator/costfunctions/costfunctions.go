@@ -316,7 +316,7 @@ func MasterTest(){
 			ElevatorMutex.Lock()
 			AllElevators["test"] = State //MÅ FINNE RIKTIG IPADRESSE GRR
 			ElevatorMutex.Unlock()
-			fmt.Println("STATE FRA ANNEN HEIS: ", State)
+			fmt.Println("STATE FRA ANNEN HEIS: ", AllElevators)
 					
 			// Input = HRAInput{
 			// HallRequests: MasterHallRequests, 
