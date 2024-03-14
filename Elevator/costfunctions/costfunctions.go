@@ -35,7 +35,7 @@ var(
 	//State2 HRAElevState
 
 	// Master recieve channels
-	ChanRecieveIP chan peers.PeerUpdate
+	//ChanRecieveIP chan peers.PeerUpdate
 	ChanRecieveElevator chan elevio.Elevator
 	
 	// Mutex
@@ -271,14 +271,14 @@ func RecieveNewAssignedOrders(){
 }
 
 func MasterReceive(){
-	ChanIP:= make(chan peers.PeerUpdate)
+	ChanRecieveIP:= make(chan peers.PeerUpdate)
 	go bcast.Receiver(Address1, ChanElevator2)
-	go peers.Receiver(15646, ChanIP)
+	go peers.Receiver(15646, ChanRecieveIP)
 	var IPaddress string
 	go func() {
 		for{
 			select{
-			case p:= <-ChanIP:
+			case p:= <-ChanRecieveIP:
 				IPaddress = p.New //HVORDAN TAR JEG UT DENNE IPADRESSEN OG SENDER DEN UT AV FUNKSJONEN OG TIL SELECTEN UNDER
 				
 			}
