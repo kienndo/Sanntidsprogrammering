@@ -271,18 +271,24 @@ func RecieveNewAssignedOrders(){
 }
 
 func MasterReceive(){
-	ChanIP:= make(chan string)
+	ChanIP:= make(chan peers.PeerUpdate)
 	go bcast.Receiver(Address1, ChanElevator2)
-	go bcast.Receiver(16666, ChanIP)
+	go peers.Receiver(16666, ChanIP)
+	var IPaddress string
+	go func() {
+		for{
+			select{
+			case p:= <-ChanIP:
+				IPaddress = p.New //HVORDAN TAR JEG UT DENNE IPADRESSEN OG SENDER DEN UT AV FUNKSJONEN OG TIL SELECTEN UNDER
+			}
+		}
+
+	}()
+
 	for{
 		select{
 		case a:= <-ChanElevator2:
-			// select{ DETTE BLIR KANSKJE FEIL???? MÅ KANSKJE BRUKE PEER GREIENE
-			// case b:= <-ChanIP:
-			// 	ElevatorIP := b
-			// 	continue
-			// }
-			//fmt.Println("ANNEN HEIS: ",a)
+		
 			UpdateHallRequests(a)
 			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests) //Sjekk rosa markert kommentar i notability, kien
 
@@ -293,7 +299,7 @@ func MasterReceive(){
 				CabRequests: a.CabRequests[:],
 			}
 			ElevatorMutex.Lock()
-			AllElevators["heis"] = State 
+			AllElevators[IPaddress] = State 
 			ElevatorMutex.Unlock()
 	
 		}
