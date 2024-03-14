@@ -136,7 +136,7 @@ func SendAssignedOrders(){
 			return 
 		}
 
-		udpAddr, err := net.ResolveUDPAddr("udp", IP+":8080") // CHOOSE A NEW PORT
+		udpAddr, err := net.ResolveUDPAddr("udp", IP) // Sends to the given IP - address
 		if err != nil {
 			return
 		}
@@ -155,7 +155,7 @@ func SendAssignedOrders(){
 }
 
 func RecieveNewAssignedOrders(){
-	addr, err := net.ResolveUDPAddr("udp", ":8080")
+	addr, err := net.ResolveUDPAddr("udp", ":8080")// HVORDAN HENTE IPADDRESSE
 	if err != nil{
 		fmt.Println("Error resolving UDP address: ", err)
 		return
