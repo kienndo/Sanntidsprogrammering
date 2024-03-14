@@ -302,7 +302,10 @@ func MasterTest(){
 	for{
 		select{
 		case a:= <-ChanElevator2:
-			fmt.Println("ANNEN HEIS: ",a)
+			//fmt.Println("ANNEN HEIS: ",a)
+			UpdateHallRequests(a)
+			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests)
+
 
 		case b:= <-peerUpdateCh:
 			fmt.Println("IP PÅ ANNEN HEIS: ", b)
