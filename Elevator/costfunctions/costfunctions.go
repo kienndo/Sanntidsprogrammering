@@ -129,7 +129,8 @@ func ChooseConnection() {
 		// Channel 1
 		fmt.Println("Sending to channel 1")
 		go ChannelTaken()
-		go bcast.RunBroadcast(ChanElevator1, Address1)
+		go bcast.RunBroadcast(ChanElevator1, Address1) //Kjøres bare en gang
+
 
 	} else {
 

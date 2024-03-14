@@ -3,10 +3,11 @@ package backup
 import (
 	"Sanntidsprogrammering/Elevator/costfunctions"
 	"Sanntidsprogrammering/Elevator/elevio"
+	fsm "Sanntidsprogrammering/Elevator/fsm"
+	"Sanntidsprogrammering/Elevator/network/bcast"
 	"fmt"
 	"net"
 	"time"
-    fsm "Sanntidsprogrammering/Elevator/fsm"
 	//costfunctions "Sanntidsprogrammering/Elevator/costfunctions"
 )
 
@@ -30,7 +31,8 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
     timer := time.NewTimer(10*time.Second)
 
     // Begynner å sende states til primary
-    costfunctions.ChooseConnection()
+    //costfunctions.ChooseConnection()
+    go bcast.RunBroadcast(costfunctions.ChanElevator1, costfunctions.Address1)
    
     
 
