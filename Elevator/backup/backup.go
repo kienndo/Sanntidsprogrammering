@@ -91,6 +91,7 @@ func SetToPrimary() {
     }
 
     defer conn.Close()
+    
 
     
     for {
@@ -117,6 +118,7 @@ func SetToPrimary() {
         //MasterSendID()
         hallassigner.SendAssignedOrders()
         hallassigner.MasterSendHallLights()
+
 
         time.Sleep(1*time.Second)
     }

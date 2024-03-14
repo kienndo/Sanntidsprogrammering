@@ -151,7 +151,6 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	flag.StringVar(&ID, "id", "", "id of this peer") 
 	flag.Parse() 
-	fmt.Println("inside broadcast")
 
 	if ID == "" { 
 		localIP, err := localip.LocalIP() 

@@ -5,12 +5,14 @@ import (
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
+	localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
 	"runtime"
 	"sync"
+	"os"
 )
 
 type HRAElevState struct {
@@ -125,7 +127,7 @@ func SendAssignedOrders(){
 		if err != nil {
 			return 
 		}
-
+		fmt.Println("IPSENDES: ", IP)
 		udpAddr, err := net.ResolveUDPAddr("udp", IP) // Sends to the given IP - address
 		if err != nil {
 			return
@@ -146,16 +148,19 @@ func SendAssignedOrders(){
 }
 
 func RecieveNewAssignedOrders(){
+	fmt.Println("TEST")
+	//var ChanMasterIDRX chan string
+
+	//bcast.Receiver(PortMasterID, ChanMasterIDRX)
+	fmt.Println("TESTER")
+
+	localIP, _ := localip.LocalIP() 
+		
+	ID := fmt.Sprintf("%s:%d", localIP, os.Getpid())
 	
-	var ChanMasterIDRX chan string
 
-	bcast.Receiver(PortMasterID, ChanMasterIDRX)
-
-	for{
-	select{
-	case p := <- ChanMasterIDRX:
-		addr, err := net.ResolveUDPAddr("udp", p)
-		fmt.Println("IP: ")
+	addr, err := net.ResolveUDPAddr("udp", ID)
+		fmt.Println("IPmottak: ", ID)
 		if err != nil{
 			fmt.Println("Error resolving UDP address: ", err)
 			return
@@ -170,7 +175,7 @@ func RecieveNewAssignedOrders(){
 	defer conn.Close()
 
 	for{
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 2048)
 		n, _, _ := conn.ReadFromUDP(buffer)
 
 		var AssignedHallRequests [][2]bool
@@ -178,16 +183,18 @@ func RecieveNewAssignedOrders(){
 			fmt.Println("Error decoding JSON", err)
 			continue
 		}
-		fmt.Println("SLAVE: ", AssignedHallRequests)
+		fmt.Println("RECIEVED ORDERS: ", AssignedHallRequests)
 		for i := 0; i < elevio.N_FLOORS; i++{
 			for j:=0; j<2; j++{
 				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
 					}
 				}
+				fmt.Println("REQUEST: ", fsm.RunningElevator.Request)
 			}
 		}
-	}
-}
+		
+	
+
 
 func MasterReceive(){
 	

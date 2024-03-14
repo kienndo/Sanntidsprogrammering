@@ -36,6 +36,7 @@ func main() {
 	//Primary and backup
 	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr)
 	go backup.SetToPrimary()
+	go hallassigner.RecieveNewAssignedOrders()
 
 	// Run elevator
 	for {
