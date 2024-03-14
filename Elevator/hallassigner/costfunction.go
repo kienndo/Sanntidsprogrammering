@@ -143,6 +143,7 @@ func SendAssignedOrders(){
 		if err != nil {
 			return
 		}
+		fmt.Println("IP: ", udpAddr)
 
 		conn, err := net.DialUDP("udp", nil, udpAddr)
 		if err != nil {
@@ -164,6 +165,8 @@ func RecieveNewAssignedOrders(){
 		fmt.Println("Error resolving UDP address: ", err)
 		return
 	}
+	fmt.Println("IP: ", addr)
+
 
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil{
@@ -187,7 +190,7 @@ func RecieveNewAssignedOrders(){
 				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
 			}
 		}
-		fmt.Println("HEIS-REQUEST: ", fsm.RunningElevator.Request)
+		
 	}
 }
 
