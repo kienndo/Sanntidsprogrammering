@@ -229,13 +229,12 @@ func MasterReceive(){
 	}
 }
 
-func MasterSendHallLights(){ // Må puttes i master, teste ved å bare sette masterhallrequests til en konstant matrise og bare teste at ting lyser
-	
+func MasterSendHallLights(){
 	ChanMasterHallRequestsTX <- MasterHallRequests
 	bcast.Transmitter(MasterHallRequestsPort, ChanMasterHallRequestsTX)
 }
 
-func UpdateHallLights(){ // Må puttes i primary og master
+func UpdateHallLights(){ 
 
 	bcast.Receiver(MasterHallRequestsPort, ChanMasterHallRequestsRX)
 	for {
