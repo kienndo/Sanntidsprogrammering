@@ -133,7 +133,7 @@ func UpdateHallRequests(e elevio.Elevator){
 func SendAssignedOrders(){
 	
 	for IP, NewHallOrders := range HRAOutput{
-		fmt.Println("Assigned orders: ", NewHallOrders)
+		fmt.Println("ASSIGNED ORDERS: ", NewHallOrders)
 		jsonData, err := json.Marshal(NewHallOrders)
 		if err != nil {
 			return 
@@ -143,7 +143,6 @@ func SendAssignedOrders(){
 		if err != nil {
 			return
 		}
-		//fmt.Println("IP: ", udpAddr)
 
 		conn, err := net.DialUDP("udp", nil, udpAddr)
 		if err != nil {
@@ -160,6 +159,7 @@ func SendAssignedOrders(){
 }
 
 func RecieveNewAssignedOrders(){
+	
 	var ChanMasterIDRX chan string
 
 	bcast.Receiver(PortMasterID, ChanMasterIDRX)
@@ -191,7 +191,7 @@ func RecieveNewAssignedOrders(){
 			fmt.Println("Error decoding JSON", err)
 			continue
 		}
-
+		fmt.Println("SLAVE: ", AssignedHallRequests)
 		for i := 0; i < elevio.N_FLOORS; i++{
 			for j:=0; j<2; j++{
 				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
