@@ -161,11 +161,11 @@ func SendAssignedOrders(){
 
 func RecieveNewAssignedOrders(){
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%s", os.Getpid()))
+	fmt.Println("IP: ", os.Getpid())
 	if err != nil{
 		fmt.Println("Error resolving UDP address: ", err)
 		return
 	}
-	fmt.Println("IP: ", addr)
 
 
 	conn, err := net.ListenUDP("udp", addr)
