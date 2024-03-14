@@ -294,3 +294,14 @@ func RecieveNewAssignedOrders(){
 	}
 
 }
+
+func MasterTest(){
+	go bcast.Receiver(Address1, ChanElevator2)
+	for{
+		select{
+		case a:= <-ChanElevator2:
+			fmt.Println("HEIS FRA BACKUP: ",a)
+
+		}
+	}
+}

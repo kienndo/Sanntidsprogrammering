@@ -91,8 +91,8 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        go costfunctions.MasterReceive()
-        
+        //go costfunctions.MasterReceive()
+        go costfunctions.MasterTest()
 
         time.Sleep(1*time.Second)
     }
