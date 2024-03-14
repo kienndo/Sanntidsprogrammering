@@ -1,17 +1,20 @@
 package backup
 
 import (
-	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
 	localip "Sanntidsprogrammering/Elevator/network/localip"
+	"Sanntidsprogrammering/Elevator/network/peers"
 	"fmt"
+	"math/rand"
 	"net"
+	"os"
 	"time"
-    "os"
-    "math/rand"
 )
+
+var PortMasterID int = 16666
 
 // Functions for process pairs and indicating primary and backup
 
@@ -111,6 +114,7 @@ func SetToPrimary() {
             
         }
         hallassigner.CostFunction()
+        MasterSendID()
         hallassigner.SendAssignedOrders()
 
         time.Sleep(1*time.Second)
@@ -124,4 +128,18 @@ func SleepRandomDuration() {
 
     time.Sleep(duration)
 
+}
+
+func MasterSendID(){
+    var MasterID string
+    var ChanMasterIDTX chan bool
+    if MasterID == "" { 
+		localIP, err := localip.LocalIP() 
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
+		}
+		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
+	}
+    peers.Transmitter(PortMasterID, MasterID, ChanMasterIDTX)
 }

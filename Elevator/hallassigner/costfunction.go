@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -30,6 +29,7 @@ var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	AllElevators = make(map[string]HRAElevState)
 	LastValidFloor int
+	PortMasterID int = 16666
 
 	// Master channels
 	ChanElevatorTX = make(chan elevio.Elevator)
@@ -160,16 +160,23 @@ func SendAssignedOrders(){
 }
 
 func RecieveNewAssignedOrders(){
-	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%d:%s", os.Getppid(), os.Args[0])) // Get terminal process ID and current file path
-	fmt.Println("IP: ", os.Getppid(), os.Args[0])
-	if err != nil{
-		fmt.Println("Error resolving UDP address: ", err)
-		return
-	}
+	var ChanMasterIDRX chan peers.PeerUpdate
+
+	peers.Receiver(PortMasterID, ChanMasterIDRX)
+
+	for{
+		select{
+		case p := <- ChanMasterIDRX:
+		addr, err := net.ResolveUDPAddr("udp", p.New)
+		fmt.Println("IP: ")
+		if err != nil{
+			fmt.Println("Error resolving UDP address: ", err)
+			return
+		}
 
 
-	conn, err := net.ListenUDP("udp", addr)
-	if err != nil{
+		conn, err := net.ListenUDP("udp", addr)
+		if err != nil{
 		fmt.Println("Error listening for UDP packets: ", err)
 		return
 	}
@@ -188,9 +195,10 @@ func RecieveNewAssignedOrders(){
 		for i := 0; i < elevio.N_FLOORS; i++{
 			for j:=0; j<2; j++{
 				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
+					}
+				}
 			}
 		}
-		
 	}
 }
 
