@@ -273,7 +273,7 @@ func RecieveNewAssignedOrders(){
 func MasterReceive(){
 	ChanIP:= make(chan peers.PeerUpdate)
 	go bcast.Receiver(Address1, ChanElevator2)
-	go peers.Receiver(16666, ChanIP)
+	go peers.Receiver(15646, ChanIP)
 	var IPaddress string
 	go func() {
 		for{
