@@ -70,7 +70,9 @@ func CostFunction(){
 		HallRequests: MasterHallRequests,
 		States: AllElevators,
 	}
-	
+
+	fmt.Println("NEW INPUT:" , Input)
+
 	hraExecutable := ""
     switch runtime.GOOS {
         case "linux":   hraExecutable  = "hall_request_assigner"
