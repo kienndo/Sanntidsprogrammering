@@ -9,10 +9,8 @@ We were unsuccessful in implementing the code for taking care of disconnections.
 
 
 # TO DO LIST
-- Skru ned tiden på master/backup og fyll ut tiden i README
 - Jeg tror ikke den lagrer MasterHallRequests dersom den faller ut! (Se på gammel kode fra backup, må browse gammel githistorie, jeg har slettet det her)
 - Oppdatere MasterHallRequests riktig at betjente ordre fjernes når den regner ut
-- Lage funksjoner for lys på hallrequests. Cablys funker.
 - Fikse funksjonene for å assigne ordre(hvordan IP legges inn, må kanskje fjerne at det står "peer-" foran og ta ut riktig verdi)
     Tror det enkelt kan løses ved å gjøre om ID som sendes bare til IP-adressen
 - Packet loss og watchdogtimer (minste prioritet nå)
@@ -23,6 +21,8 @@ We were unsuccessful in implementing the code for taking care of disconnections.
 
 ### Funker nå:
 - IP-adresse for master
+- Skru ned tiden på master/backup og fyll ut tiden i README og passe på at kun en kjører primary
+- Lage funksjoner for lys på hallrequests. Cablys funker.
 
 ### Json-fil:
     // Struct for JSONConfig

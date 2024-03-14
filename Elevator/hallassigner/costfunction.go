@@ -143,7 +143,7 @@ func SendAssignedOrders(){
 		if err != nil {
 			return
 		}
-		fmt.Println("IP: ", udpAddr)
+		//fmt.Println("IP: ", udpAddr)
 
 		conn, err := net.DialUDP("udp", nil, udpAddr)
 		if err != nil {
@@ -165,7 +165,7 @@ func RecieveNewAssignedOrders(){
 		fmt.Println("Error resolving UDP address: ", err)
 		return
 	}
-	fmt.Println("IP: ", addr)
+	//fmt.Println("IP: ", addr)
 
 
 	conn, err := net.ListenUDP("udp", addr)
