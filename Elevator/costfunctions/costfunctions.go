@@ -15,7 +15,6 @@ import (
 	
 )
 
-
 type HRAElevState struct {
     Behavior    string      `json:"behaviour"`
     Floor       int         `json:"floor"` 
@@ -32,8 +31,8 @@ var(
 	LastValidFloor int
 	State1 HRAElevState
 	State2 HRAElevState
+
 	CostMutex sync.Mutex
-	//HRAElevator = fsm.RunningElevator
 	ChanHallRequests = make(chan elevio.ButtonEvent)
 	AllElevators = make(map[string]HRAElevState)
 
@@ -102,7 +101,6 @@ func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallReques
 				chanCabRequests <- btnEvent
 			} else{
 				chanHallRequests <- btnEvent
-
 			}
 		}
 	}
@@ -125,14 +123,12 @@ func ChooseConnection() {
 		fmt.Println("Sending to channel 1")
 		go ChannelTaken()
 		go bcast.RunBroadcast(ChanElevator1, Address1)
-		//go CostUpdate(AddrU1)
 
 	} else {
 
 		// Channel 2
 		fmt.Println("sending to channel 2")
 		go bcast.RunBroadcast(ChanElevator2, Address2)
-		//go CostUpdate(AddrU2)
 	}
 	time.Sleep(1*time.Millisecond)
 }
@@ -187,16 +183,12 @@ func RecievingState(address string,state *elevio.Elevator) {
 }
 
 
-func UpdateHallRequests(ChanHallRequests chan elevio.ButtonEvent){ // Hvorfor oppdaterer den kunen gang
-	for { 
-	select {
-		// SENDE OVER UDP
-		case UpdateHallRequests := <-ChanHallRequests:
-			CostMutex.Lock()
-			MasterHallRequests[UpdateHallRequests.Floor][UpdateHallRequests.Button] = true
-			CostMutex.Unlock()	
-		}
-	}
+func UpdateHallRequests(btnType int, floor int){ 
+		CostMutex.Lock()
+		MasterHallRequests[btnType][floor] = true
+		CostMutex.Unlock()	
+		
+	
 }
 
 func MasterRecieve(){
