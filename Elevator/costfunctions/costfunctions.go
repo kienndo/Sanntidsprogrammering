@@ -288,10 +288,13 @@ func RecieveNewAssignedOrders(){
 
 		for i := 0; i < elevio.N_FLOORS; i++{
 			for j:=0; j<2; j++{
-				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
-			}
-		}
-	}
+				fsm.RunningElevator.Request[i][j]=State := HRAElevState{
+					Behavior: elevio.EbToString(b.Behaviour),
+					Floor: b.Floor,
+					Direction: elevio.ElevioDirnToString(b.Dirn),
+					CabRequests: b.CabRequests[:],
+				}
+				AllElevators["test"] = State
 
 }
 
@@ -304,7 +307,22 @@ func MasterTest(){
 		case a:= <-ChanElevator2:
 			//fmt.Println("ANNEN HEIS: ",a)
 			UpdateHallRequests(a)
-			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests)
+			//fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests) //Sjekk rosa markert kommentar i notability, kien
+			State := HRAElevState{
+				Behavior: elevio.EbToString(a.Behaviour),
+				Floor: a.Floor,
+				Direction: elevio.ElevioDirnToString(a.Dirn),
+				CabRequests: a.CabRequests[:],
+			}
+			AllElevators["test"] = State //må få sendt over ipadresse og!
+			Input = HRAInput{
+				HallRequests: MasterHallRequests, 
+							States: AllElevators,
+
+						}
+						fmt.Println("INPUT:", Input)
+				}
+
 
 
 		case b:= <-peerUpdateCh:
