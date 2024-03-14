@@ -160,8 +160,8 @@ func SendAssignedOrders(){
 }
 
 func RecieveNewAssignedOrders(){
-	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%d:%s", os.Getpid())) //HENTE UT IPADRESSE TIL MASTER, trenger en måte å indikere den
-	fmt.Println("IP: ", os.Getpid())
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%d:%s", os.Getppid(), os.Args[0])) // Get terminal process ID and current file path
+	fmt.Println("IP: ", addr)
 	if err != nil{
 		fmt.Println("Error resolving UDP address: ", err)
 		return
