@@ -40,7 +40,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
-    //go hallassigner.RecieveNewAssignedOrders()
+    go hallassigner.RecieveNewAssignedOrders()
    
     // Run backup elevator too
     for {
