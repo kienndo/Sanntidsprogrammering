@@ -59,12 +59,27 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 		if requests.ShouldClearImmediately(RunningElevator, btn_Floor, btn_type) != 0 {
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 		} else {
-			RunningElevator.Request[btn_Floor][btn_type] = true
+			if btn_type == 2{
+				RunningElevator.Request[btn_Floor][btn_type] = true
+				RunningElevator.CabRequests[btn_Floor]= true
+			} else {
+				RunningElevator.HallRequests[btn_Floor][btn_type] = true
+			}
 		}
 	case elevio.EB_Moving:
-		RunningElevator.Request[btn_Floor][btn_type] = true
+		if btn_type == 2{
+			RunningElevator.Request[btn_Floor][btn_type] = true
+			RunningElevator.CabRequests[btn_Floor]= true
+		} else {
+			RunningElevator.HallRequests[btn_Floor][btn_type] = true
+		}
 	case elevio.EB_Idle:
-		RunningElevator.Request[btn_Floor][btn_type] = true
+		if btn_type == 2{
+			RunningElevator.Request[btn_Floor][btn_type] = true
+			RunningElevator.CabRequests[btn_Floor]= true
+		} else {
+			RunningElevator.HallRequests[btn_Floor][btn_type] = true
+		}
 		var pair elevio.DirnBehaviourPair = requests.ChooseDirection(RunningElevator)
 		RunningElevator.Dirn = pair.Dirn
 		RunningElevator.Behaviour = pair.Behaviour

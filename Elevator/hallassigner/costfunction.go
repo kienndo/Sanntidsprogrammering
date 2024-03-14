@@ -105,23 +105,10 @@ func CostFunction(){
 	
 }	
 
-func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
-	for{
-		select {
-			case btnEvent := <-chanButtonRequests:
-				if btnEvent.Button == elevio.BT_Cab{
-					chanCabRequests <- btnEvent
-				} else{
-					chanHallRequests <- btnEvent
-				}
-			}
-		}
-}
-
 func UpdateHallRequests(e elevio.Elevator){ 
 		for i:= 0; i<elevio.N_FLOORS; i++{
 			for j:= 0; j<2; j++{
-			if(e.Request[i][j]){
+			if(e.HallRequests[i][j]){
 				HallRequestMutex.Lock()
 				MasterHallRequests[i][j] = true 
 				HallRequestMutex.Unlock()	

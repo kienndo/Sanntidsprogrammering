@@ -17,12 +17,14 @@ We were unsuccessful in implementing the code for taking care of disconnections.
 - Kodekvalitet(fjerne prints, sortere channels, fjerne overflødige funksjoner og gi navn til ting så det gir mening. Kommentarene skal bare gi kontekst, ikke beskrive hva funksjonen gjør)
 - Acknowledge funksjon for UDP
 - Konfigurere en json-fil for konstanter?
-- Må gjøre så den ikke kjører hall order, men bare sender det inn! Fikses i FsmOnButtonPress
+- 
 
 ### Funker nå:
 - IP-adresse for master
 - Skru ned tiden på master/backup og fyll ut tiden i README og passe på at kun en kjører primary
 - Lage funksjoner for lys på hallrequests. Cablys funker.
+- TROR DETTE SKAL FUNGERE NÅ:
+  - Må gjøre så den ikke kjører hall order, men bare sender det inn! Fikses i FsmOnButtonPress
 
 ### Json-fil:
     // Struct for JSONConfig
@@ -144,5 +146,18 @@ We were unsuccessful in implementing the code for taking care of disconnections.
 		CostMutex.Unlock()
 	}
     }
+
+	func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
+	for{
+		select {
+			case btnEvent := <-chanButtonRequests:
+				if btnEvent.Button == elevio.BT_Cab{
+					chanCabRequests <- btnEvent
+				} else{
+					chanHallRequests <- btnEvent
+				}
+			}
+		}
+}
 
 

@@ -18,7 +18,7 @@ import (
 
 var( 
 		ID string
-		UpdatedElevator elevio.Elevator
+		//UpdatedElevator elevio.Elevator
 )
 
 const bufSize = 1024
@@ -193,8 +193,8 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 			fmt.Printf("  Lost:     %q\n", p.Lost) 
 
 		case a := <-ElevatorMessageRX: 
-			//fmt.Printf("Received: %#v\n", a)
-			UpdatedElevator = a
+			fmt.Printf("Received: %#v\n", a)
+			//UpdatedElevator = a
 		}
 	}
 }

@@ -25,6 +25,7 @@ type Elevator struct {
 	Dirn MotorDirection					
 	Behaviour ElevatorBehaviour 		
 	Request [N_FLOORS][N_BUTTONS]bool
+	HallRequests [N_FLOORS][2]bool
 	CabRequests [N_FLOORS]bool		
 	Config Config 						
 }

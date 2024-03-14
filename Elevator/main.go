@@ -23,14 +23,12 @@ func main() {
 	ChanButtons := make(chan elevio.ButtonEvent)
 	ChanFloors := make(chan int)
 	ChanObstr := make(chan bool)
-	ChanHallRequests := make(chan elevio.ButtonEvent)
-	ChanCabRequests := make(chan elevio.ButtonEvent)
 	
 	//Polling 
 	go elevio.PollButtons(ChanButtons)
 	go elevio.PollFloorSensor(ChanFloors)
 	go elevio.PollObstructionSwitch(ChanObstr)
-	go hallassigner.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
+	
 
 	// Timer
 	go fsm.CheckForTimeout()
