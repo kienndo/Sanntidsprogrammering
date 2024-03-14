@@ -1,0 +1,50 @@
+Don’t expose member data in public Exposing member data is a violation of encap- sulation and limits your control over the abstraction. As Arthur Riel points out, a Point class that exposes
+float x;
+float y;
+float z;
+is violating encapsulation because client code is free to monkey around with Point’s data and Point won’t necessarily even know when its values have been changed (Riel 1996). However, a Point class that exposes
+float GetX();
+float GetY();
+float GetZ();
+void SetX( float x );
+void SetY( float y );
+void SetZ( float z );
+is maintaining perfect encapsulation. 
+
+
+Grouping of similar type variables :
+var (
+  red = "#FF0000"
+  green = "#38761d"
+)
+
+type (
+
+  Animal struct{
+    Name string
+  }
+
+  Birds struct{
+    Name string
+  }
+)
+
+const (
+  PI = 3.14
+)
+
+
+
+--- Watchdog timer ---
+Jeg tenker at det initialiseres en timer. Denne timeren kan kalles i case-funksjoner, og resetes eller stoppes basert på casen
+Ved case = idle, bør ikke watchdogTimer trigges
+Når en heis ankommer en etasje, bør den trigges (reset)
+Når en heis er i bevegelse, bør den stoppes
+Når en heis har døren åpen, bør den stoppes
+
+Hvis en watchdogtimer returnerer watchdogTimer.C, altså timeren har gått ut, bør 
+Unavailable = true
+Alle heisene må få beskjed, og ordre skal ikke lenger assignes til heisen som er Unavailable  
+Når unavailable = true, kan dette brukes med if-setninger og feks unngå at requests blir assigned til denne 
+
+

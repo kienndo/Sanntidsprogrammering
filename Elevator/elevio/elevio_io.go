@@ -11,38 +11,42 @@ import (
 const (
 	N_FLOORS	= 4
 	N_BUTTONS	= 3
-	_pollRate = 20 * time.Millisecond
+	_pollRate 	= 20 * time.Millisecond
 )
 
-var _initialized bool = false
-var _numFloors int = 4
-var _mtx sync.Mutex
-var _conn net.Conn
-
+var (
+	_initialized 	bool 		= false
+ 	_numFloors 		int 		= 4
+)
+var (
+	_mtx 		sync.Mutex
+ 	_conn 		net.Conn
+)
 
 type Elevator struct {
-	Floor int 							
-	Dirn MotorDirection					
-	Behaviour ElevatorBehaviour 		
-	Request [N_FLOORS][N_BUTTONS]bool
-	CabRequests [N_FLOORS]bool		
-	Config Config 						
+	Floor 			int 							
+	Dirn 			MotorDirection					
+	Behaviour 		ElevatorBehaviour 		
+	Request 		[N_FLOORS][N_BUTTONS]bool
+	CabRequests 	[N_FLOORS]bool		
+	Config 			Config
+	Unavailable 	bool	//nødvendig?				
 }
 
 type Config struct {
-	ClearRequestVariant ClearRequestVariant 
-	DoorOpenDuration float64
+	ClearRequestVariant 	ClearRequestVariant 
+	DoorOpenDuration 		float64
 }
 
 type ClearRequestVariant int
 const (
-	CV_All ClearRequestVariant = 0 
-	CV_InDirn = 1 
+	CV_All ClearRequestVariant 	= 0 
+	CV_InDirn 					= 1 
 )
 
 type DirnBehaviourPair struct {
-	Dirn MotorDirection
-	Behaviour ElevatorBehaviour
+	Dirn 		MotorDirection
+	Behaviour 	ElevatorBehaviour
 }
 
 type MotorDirection int

@@ -146,8 +146,8 @@ func checkTypeRecursive(val reflect.Type, offsets []int){
 		}
 	}
 }
-
-func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
+// er det misvisende å ha addr og ikke port som input?
+func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) { 
 	flag.StringVar(&ID, "id", "", "id of this peer") 
 	flag.Parse() 
 	fmt.Println("inside broadcast")
@@ -161,7 +161,7 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 		ID = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
-	peerUpdateCh := make(chan peers.PeerUpdate)
+	peerUpdateCh := peers.PeerUpdateCh
 	peerTxEnable := make(chan bool) 
 
 	go peers.Transmitter(15646, ID, peerTxEnable)
@@ -192,6 +192,8 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 			fmt.Printf("  Slaves:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New) 
 			fmt.Printf("  Lost:     %q\n", p.Lost) 
+			fmt.Printf("  Unavailable:     %q\n", p.Unavailable)
+
 
 		case a := <-ElevatorMessageRX: 
 			fmt.Printf("Received: %#v\n", a)

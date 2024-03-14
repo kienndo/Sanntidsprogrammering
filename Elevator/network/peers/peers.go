@@ -12,7 +12,9 @@ type PeerUpdate struct {
 	Peers []string
 	New   string
 	Lost  []string
+	Unavailable []string
 }
+var PeerUpdateCh = make(chan PeerUpdate)
 
 const interval = 15 * time.Millisecond
 const timeout = 500 * time.Millisecond

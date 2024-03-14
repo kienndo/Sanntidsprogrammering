@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
+	"reflect"
+	peers "Sanntidsprogrammering/Elevator/network/peers"
 	
 )
 
@@ -28,9 +30,9 @@ type HRAInput struct {
 }
 
 var(
-	MasterHallRequests [elevio.N_FLOORS][2]bool
-	AllElevators = make(map[string]HRAElevState)
-	LastValidFloor int
+	MasterHallRequests 	[elevio.N_FLOORS][2]bool
+	AllElevators = 		make(map[string]HRAElevState)
+	LastValidFloor 		int
 	//State1 HRAElevState
 	//State2 HRAElevState
 
@@ -39,17 +41,19 @@ var(
 	ChanRecieveElevator chan elevio.Elevator
 	
 	// Mutex
-	HallRequestMutex sync.Mutex
-	CostMutex sync.Mutex
-	ElevatorMutex sync.Mutex
+	HallRequestMutex 	sync.Mutex
+	CostMutex 			sync.Mutex
+	ElevatorMutex 		sync.Mutex
 
 	ChanElevator1 = make(chan elevio.Elevator)
 	ChanElevator2 = make(chan elevio.Elevator)
 	Address1 int = 1659
 	Address2 int = 1658
 
-	HRAOutput map[string][][2]bool
-	Input HRAInput
+	HRAOutput 	map[string][][2]bool
+	Input 		HRAInput
+
+	watchdogTimer = time.NewTimer(time.Duration(5) * time.Second) //mulig den må stoppes fra programstart
 )
 
 func InitMasterHallRequests(){
@@ -67,9 +71,19 @@ func SetLastValidFloor(ValidFloor int) {
 func CostFunction(){
 
 	Input = HRAInput{
-		HallRequests: MasterHallRequests,
-		States: AllElevators,
+		HallRequests: 	MasterHallRequests,
+		States: 		AllElevators,
 	}
+	// for id, elevator := range AllElevators {
+	// 	if !elevator.Unavailable {
+	// 		Input.States[id] = HRAElevState{
+	// 			Behavior: elevator.Behavior,
+	// 			Floor: elevator.Floor,
+	// 			Direction: elevator.Direction,
+	// 			CabRequests: elevator.CabRequests,
+	// 		}
+	// 	}
+	// }
 
 	fmt.Println("NEW INPUT:" , Input)
 
@@ -109,11 +123,14 @@ func CostFunction(){
 	fmt.Println("NEW OUTPUT:" , HRAOutput)
 }	
 
-func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
-
+func ButtonIdentifier(
+	chanButtonRequests chan elevio.ButtonEvent, 
+	chanHallRequests chan elevio.ButtonEvent, 
+	chanCabRequests chan elevio.ButtonEvent) {
+	
 	select {
 		case btnEvent := <-chanButtonRequests:
-			if btnEvent.Button == elevio.BT_Cab{
+			if btnEvent.Button == elevio.BT_Cab {
 				chanCabRequests <- btnEvent
 			} else{
 				chanHallRequests <- btnEvent
@@ -123,33 +140,30 @@ func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallReques
 
 func ChooseConnection() {
 	// Sjekker om channel 1 er ledig
+	// Tries to establish a UDP packet listener on port 29503
 	conn, err := net.ListenPacket("udp",":29503")
+	// Error: Port is already in use
 	if err != nil {
 		fmt.Println("Error listening to channel")
 	}
 	defer conn.Close()
 
 	buffer := make([]byte, 1024)
-	conn.SetReadDeadline(time.Now().Add(3*time.Second))
-	_, _, err = conn.ReadFrom(buffer)
-
-	if err != nil {
-
+	conn.SetReadDeadline(time.Now().Add(3*time.Second)) //If no data is received within 3 seconds, an error is returned
+	_, _, err = conn.ReadFrom(buffer) // Tries to read from conn
+	if err != nil { // If no data is received within 3 seconds 
 		// Channel 1
-		fmt.Println("Sending to channel 1")
+		fmt.Println("Sending to channel 1") 
 		go ChannelTaken()
 		go bcast.RunBroadcast(ChanElevator1, Address1) //Kjøres bare en gang
-
-
-	} else {
-
+	} else { // no error, data recieved within 3 seconds
 		// Channel 2
 		fmt.Println("sending to channel 2")
 		go bcast.RunBroadcast(ChanElevator2, Address2)
 	}
 	time.Sleep(1*time.Millisecond)
 }
-
+// Channel 1 
 func ChannelTaken() {
 	for {
 		conn, err := net.Dial("udp", "10.100.23.255:29503")
@@ -162,6 +176,23 @@ func ChannelTaken() {
 		time.Sleep(1*time.Second)
 	}
 }
+
+// func ChannelTaken() {
+// 	conn, err := net.Dial("udp", "10.100.23.255:29503")
+// 		if err != nil {
+// 			fmt.Println("Error dialing udp")
+// 			return
+// 		}
+// 		defer conn.Close()
+// 		for {
+// 			_, err = conn.Write([]byte("1"))
+// 			if err !=  nil {
+// 				fmt.Printf("Could not write to server %v\n", err)
+// 				return
+// 			}
+// 			time.Sleep(1*time.Second)
+// 	}
+// }
 
 func RecievingState(address string,state *elevio.Elevator) {
 
@@ -280,11 +311,47 @@ func MasterReceive(){
 			select{
 			case p:= <-ChanRecieveIP:
 				IPaddress = p.New //HVORDAN TAR JEG UT DENNE IPADRESSEN OG SENDER DEN UT AV FUNKSJONEN OG TIL SELECTEN UNDER
-				
+				if len(p.Lost) > 0 {
+					watchdogTimer.Reset(time.Duration(5) * time.Second)
+						// check if p.Lost becomes p.New before timer 
+					go func() {
+						for {
+							if reflect.DeepEqual(p.Lost, p.New) {
+								watchdogTimer.Stop()
+								fmt.Println("p.Lost has become p.New before timer expired")
+                				return
+							}
+							time.Sleep(time.Millisecond * 100)
+						}
+					}()
+					select {
+					case <-watchdogTimer.C:
+						fmt.Println("Elevator is deaddddd")
+						unavailableElevator := p.Lost[0]
+						newAllElevators := make(map[string]HRAElevState) // Change the type to slice
+						ElevatorMutex.Lock()
+						for ID, elevator := range AllElevators {
+							if ID != unavailableElevator {
+								newAllElevators[ID]= elevator // Use append to add elements to the slice
+							}
+						}
+						peerUpdate := peers.PeerUpdate{
+							Peers:       p.Peers,
+							New:         p.New,
+							Lost:        []string{}, //tømme?
+							Unavailable: []string{p.Lost[0]},
+						}
+						peerUpdateCh := peers.PeerUpdateCh
+						peerUpdateCh <- peerUpdate 
+						AllElevators = newAllElevators
+						ElevatorMutex.Unlock()
+					default:
+						// do nothing	
+					}		
+				}
 			}
 		}
-
-	}()
+		}()
 
 	for{
 		select{
@@ -294,10 +361,10 @@ func MasterReceive(){
 			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests) //Sjekk rosa markert kommentar i notability, kien
 
 			State := HRAElevState{
-				Behavior: elevio.EbToString(a.Behaviour),
-				Floor: a.Floor,
-				Direction: elevio.ElevioDirnToString(a.Dirn),
-				CabRequests: a.CabRequests[:],
+				Behavior: 		elevio.EbToString(a.Behaviour),
+				Floor: 			a.Floor,
+				Direction: 		elevio.ElevioDirnToString(a.Dirn),
+				CabRequests: 	a.CabRequests[:],
 			}
 			fmt.Println("NY IPADRESSE", IPaddress)
 			ElevatorMutex.Lock()
@@ -306,4 +373,6 @@ func MasterReceive(){
 	
 		}
 	}
+
 }
+

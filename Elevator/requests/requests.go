@@ -33,39 +33,52 @@ func ChooseDirection(e elevio.Elevator) elevio.DirnBehaviourPair {
 	switch e.Dirn {
 	case elevio.MD_Up:
 		if IfFloorAbove(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Up, Behaviour: elevio.EB_Moving}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Up, 
+												Behaviour: elevio.EB_Moving}
 		}
 		if IfFloorHere(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Down, Behaviour: elevio.EB_DoorOpen}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Down, 
+												Behaviour: elevio.EB_DoorOpen}
 		}
 		if IfFloorBelow(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Down, Behaviour: elevio.EB_Moving}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Down, 
+												Behaviour: elevio.EB_Moving}
 		}
-		return elevio.DirnBehaviourPair{Dirn: elevio.MD_Stop, Behaviour: elevio.EB_Idle}
+		return elevio.DirnBehaviourPair 		{Dirn: elevio.MD_Stop, 
+												Behaviour: elevio.EB_Idle}
 	case elevio.MD_Down:
 		if IfFloorBelow(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Down, Behaviour: elevio.EB_Moving}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Down, 
+												Behaviour: elevio.EB_Moving}
 		}
 		if IfFloorHere(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Up, Behaviour: elevio.EB_DoorOpen}
+			return elevio.DirnBehaviourPair		{Dirn: elevio.MD_Up, 
+												Behaviour: elevio.EB_DoorOpen}
 		}
 		if IfFloorAbove(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Up, Behaviour: elevio.EB_Moving}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Up, 
+												Behaviour: elevio.EB_Moving}
 		}
-		return elevio.DirnBehaviourPair{Dirn: elevio.MD_Stop, Behaviour: elevio.EB_Idle}
+		return elevio.DirnBehaviourPair 		{Dirn: elevio.MD_Stop, 
+												Behaviour: elevio.EB_Idle}
 	case elevio.MD_Stop:
 		if IfFloorHere(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Stop, Behaviour: elevio.EB_DoorOpen}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Stop, 
+												Behaviour: elevio.EB_DoorOpen}
 		}
 		if IfFloorAbove(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Up, Behaviour: elevio.EB_Moving}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Up, 
+												Behaviour: elevio.EB_Moving}
 		}
 		if IfFloorBelow(e) != 0 {
-			return elevio.DirnBehaviourPair{Dirn: elevio.MD_Down, Behaviour: elevio.EB_Moving}
+			return elevio.DirnBehaviourPair 	{Dirn: elevio.MD_Down, 
+												Behaviour: elevio.EB_Moving}
 		}
-		return elevio.DirnBehaviourPair{Dirn: elevio.MD_Stop, Behaviour: elevio.EB_Idle}
+		return elevio.DirnBehaviourPair 		{Dirn: elevio.MD_Stop, 
+												Behaviour: elevio.EB_Idle}
 	default:
-		return elevio.DirnBehaviourPair{Dirn: elevio.MD_Stop, Behaviour: elevio.EB_Idle}
+		return elevio.DirnBehaviourPair 		{Dirn: elevio.MD_Stop, 
+												Behaviour: elevio.EB_Idle}
 	}
 }
 

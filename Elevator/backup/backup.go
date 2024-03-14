@@ -2,7 +2,7 @@ package backup
 
 import (
 	"Sanntidsprogrammering/Elevator/costfunctions"
-	"Sanntidsprogrammering/Elevator/elevio"
+	//"Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	"Sanntidsprogrammering/Elevator/network/bcast"
 	"fmt"

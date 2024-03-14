@@ -5,7 +5,7 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
-	
+	"time"
 	"sync"
 
 )
@@ -13,20 +13,21 @@ import (
 // Initialization
 var (
 	RunningElevator = elevio.Elevator{
-		Floor: -1,
-		Dirn:  elevio.MD_Stop,
-		Behaviour: elevio.EB_Idle,
-		Request: [elevio.N_FLOORS][elevio.N_BUTTONS]bool{{false, false, false}, 
-														{false, false, false}, 
-														{false, false, false}, 
-														{false, false, false}},
+		Floor: 		-1,
+		Dirn:  		elevio.MD_Stop,
+		Behaviour: 	elevio.EB_Idle,
+		Request: 	[elevio.N_FLOORS][elevio.N_BUTTONS]bool{{false, false, false}, 
+															{false, false, false}, 
+															{false, false, false}, 
+															{false, false, false}},
+		Unavailable: false,
 		Config: elevio.Config{
 			DoorOpenDuration:    3.0,
 			ClearRequestVariant: elevio.CV_All,
 		},
 	}
-	ObstructionIndicator bool
-	OrderMutex sync.Mutex
+	ObstructionIndicator 	bool
+	OrderMutex 				sync.Mutex
 )
 
 // Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
@@ -70,18 +71,22 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 		}
 	case elevio.EB_Moving:
 		RunningElevator.Request[btn_Floor][btn_type] = true
+
 	case elevio.EB_Idle:
 		RunningElevator.Request[btn_Floor][btn_type] = true
 		var pair elevio.DirnBehaviourPair = requests.ChooseDirection(RunningElevator)
 		RunningElevator.Dirn = pair.Dirn
 		RunningElevator.Behaviour = pair.Behaviour
+
 		switch pair.Behaviour {
 		case elevio.EB_DoorOpen:
 			elevio.SetDoorOpenLamp(true)
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 			RunningElevator = requests.ClearAtCurrentFloor(RunningElevator)
+
 		case elevio.EB_Moving:
 			elevio.SetMotorDirection(RunningElevator.Dirn)
+
 		case elevio.EB_Idle:
 			break
 		}
@@ -133,22 +138,20 @@ func FsmOnDoorTimeout() {
 }
 
 func CheckForTimeout() {
-	fmt.Println("jeg er her")
 	for {
 		if timer.TimerTimedOut() != 0 {
-			for ObstructionIndicator{
+			for ObstructionIndicator {
 				FsmObstruction(ObstructionIndicator)
 				fmt.Println("obstruction!")
 			}
 			timer.TimerStop()
 			FsmOnDoorTimeout()
-			fmt.Println("Timed out?")
 		}
 	}
 }
 
 func FsmObstruction(a bool){
-	if a && RunningElevator.Behaviour == elevio.EB_DoorOpen{
+	if a && RunningElevator.Behaviour == elevio.EB_DoorOpen {
 		timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 	}
 }
