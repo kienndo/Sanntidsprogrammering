@@ -31,7 +31,6 @@ func main() {
 	go elevio.PollFloorSensor(ChanFloors)
 	go elevio.PollObstructionSwitch(ChanObstr)
 	go costfunctions.ButtonIdentifier(ChanButtons,ChanHallRequests, ChanCabRequests)
-	//go costfunctions.UpdateHallRequests(ChanHallRequests)
 
 	// Timer
 	go fsm.CheckForTimeout()
