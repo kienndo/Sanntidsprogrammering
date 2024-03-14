@@ -20,7 +20,7 @@ var PortMasterID int = 16666
 func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
 
     
-    conn, err := net.ListenPacket("udp", ":29501")
+    conn, err := net.ListenPacket("udp", ":29502")
     if err != nil {
         fmt.Println("Error listening")
     }
@@ -40,7 +40,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
-    go hallassigner.RecieveNewAssignedOrders()
+    //go hallassigner.RecieveNewAssignedOrders()
    
     // Run backup elevator too
     for {
@@ -84,7 +84,7 @@ func SetToPrimary() {
 
     time.Sleep(5*time.Second)
 
-    conn, err := net.Dial("udp", "10.100.23.255:29501") //Burde kanskje egt ikke kjøre en statisk IP-adresse?
+    conn, err := net.Dial("udp", "10.100.23.255:29502") //Burde kanskje egt ikke kjøre en statisk IP-adresse?
     if err != nil {
         fmt.Println("Error dialing UDP")
     }
