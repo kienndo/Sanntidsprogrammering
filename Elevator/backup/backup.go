@@ -89,7 +89,7 @@ func SetToPrimary() {
         }
 
         fmt.Println("Doing primarystuff")
-        go costfunctions.MasterRecieve()
+        go costfunctions.MasterReceive()
         
 
         time.Sleep(1*time.Second)

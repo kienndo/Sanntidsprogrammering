@@ -3,7 +3,8 @@ package costfunctions
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	bcast "Sanntidsprogrammering/Elevator/network/bcast"
-	localip "Sanntidsprogrammering/Elevator/network/localip"
+	peers "Sanntidsprogrammering/Elevator/network/peers"
+	//localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -28,13 +29,18 @@ type HRAInput struct {
 
 var(
 	MasterHallRequests [elevio.N_FLOORS][2]bool
-	LastValidFloor int
-	State1 HRAElevState
-	State2 HRAElevState
-
-	CostMutex sync.Mutex
-	ChanHallRequests = make(chan elevio.ButtonEvent)
 	AllElevators = make(map[string]HRAElevState)
+	LastValidFloor int
+	//State1 HRAElevState
+	//State2 HRAElevState
+
+	// Master recieve channels
+	ChanRecieveIP chan peers.PeerUpdate
+	ChanRecieveElevator chan elevio.Elevator
+	
+	// Mutex
+	HallRequestMutex sync.Mutex
+	CostMutex sync.Mutex
 
 	ChanElevator1 = make(chan elevio.Elevator)
 	ChanElevator2 = make(chan elevio.Elevator)
@@ -183,58 +189,46 @@ func RecievingState(address string,state *elevio.Elevator) {
 	}
 }
 
-
-func UpdateHallRequests(btnType int, floor int){ 
-		CostMutex.Lock()
-		MasterHallRequests[btnType][floor] = true
-		CostMutex.Unlock()	
-		
-	
-}
-
-func MasterRecieve(){
-	
-	for {
-	select{
-	case a := <- ChanElevator1:
-		fmt.Println("MASTER")
-		State1 := HRAElevState{
-			
-			Behavior: elevio.EbToString(a.Behaviour),
-			Floor: a.Floor,
-			Direction: elevio.ElevioDirnToString(a.Dirn),
-			CabRequests: a.CabRequests[:],
+func UpdateHallRequests(e elevio.Elevator){ 
+		for i:= 0; i<elevio.N_FLOORS; i++{
+			for j:= 0; j<2; j++{
+			if(e.Request[i][j]){
+				CostMutex.Lock()
+				MasterHallRequests[i][j] = true
+				CostMutex.Unlock()	
+			}
 		}
-		ElevatorIP, _ := localip.LocalIP()
-		AllElevators[ElevatorIP] = State1
-		
-		Input = HRAInput{
-			HallRequests: MasterHallRequests,
-			States: AllElevators,
-		}
-				
-		fmt.Println("INPUT:", Input)
-		CostFunction()
-
-	case b := <-ChanElevator2:
-		State2 := HRAElevState{
-			Behavior: elevio.EbToString(b.Behaviour),
-			Floor: b.Floor,
-			Direction: elevio.ElevioDirnToString(b.Dirn),
-			CabRequests: b.CabRequests[:],
-		}
-		ElevatorIP, _ := localip.LocalIP()
-		AllElevators[ElevatorIP] = State2
-		
-		Input = HRAInput{
-			HallRequests: MasterHallRequests,
-			States: AllElevators,
-		}
-				
-		fmt.Println("INPUT:", Input)
-		CostFunction()
 	}
 }
+
+func MasterReceive(){
+
+	peers.Receiver(156463, ChanRecieveIP) //Riktig port?
+	for {
+		select {
+		case a:= <-ChanRecieveIP:
+			IPaddress := a.New
+			bcast.Receiver(Address1, ChanRecieveElevator)
+			select {
+				case b:= <-ChanRecieveElevator:
+					State := HRAElevState{
+						Behavior: elevio.EbToString(b.Behaviour),
+						Floor: b.Floor,
+						Direction: elevio.ElevioDirnToString(b.Dirn),
+						CabRequests: b.CabRequests[:],
+					}
+					AllElevators[IPaddress] = State
+					UpdateHallRequests(b)
+							
+					Input = HRAInput{
+					HallRequests: MasterHallRequests, 
+								States: AllElevators,
+
+							}
+							fmt.Println("INPUT:", Input)
+					}
+				}
+			}
 }
 
 
@@ -289,7 +283,7 @@ func RecieveNewAssignedOrders(){
 		}
 
 		for i := 0; i < elevio.N_FLOORS; i++{
-			for j:=0; j<1; j++{
+			for j:=0; j<2; j++{
 				fsm.RunningElevator.Request[i][j]=AssignedHallRequests[i][j]
 			}
 		}
