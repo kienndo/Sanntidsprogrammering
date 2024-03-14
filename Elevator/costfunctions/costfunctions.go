@@ -280,6 +280,7 @@ func MasterReceive(){
 			select{
 			case p:= <-ChanIP:
 				IPaddress = p.New //HVORDAN TAR JEG UT DENNE IPADRESSEN OG SENDER DEN UT AV FUNKSJONEN OG TIL SELECTEN UNDER
+				fmt.Println("NY IPADRESSE", IPaddress)
 			}
 		}
 
@@ -298,7 +299,6 @@ func MasterReceive(){
 				Direction: elevio.ElevioDirnToString(a.Dirn),
 				CabRequests: a.CabRequests[:],
 			}
-			fmt.Println("NY IPADRESSE", IPaddress)
 			ElevatorMutex.Lock()
 			AllElevators[IPaddress] = State 
 			ElevatorMutex.Unlock()
