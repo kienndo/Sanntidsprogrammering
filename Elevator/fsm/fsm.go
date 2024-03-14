@@ -4,7 +4,6 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
-	
 	"sync"
 
 )
@@ -60,12 +59,6 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 		if requests.ShouldClearImmediately(RunningElevator, btn_Floor, btn_type) != 0 {
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 		} else {
-		// 	if btn_type == 2 { 
-		// 		RunningElevator.CabRequests[btn_Floor] = true
-		// 	} else {
-		// 		Button := elevio.ButtonEvent{btn_Floor, btn_type}
-		// 		chanHallRequests <- Button
-		// 	}
 			RunningElevator.Request[btn_Floor][btn_type] = true
 		}
 	case elevio.EB_Moving:

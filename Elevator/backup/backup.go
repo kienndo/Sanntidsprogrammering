@@ -15,6 +15,7 @@ import (
 // Functions for process pairs and indicating primary and backup
 
 func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
+
     conn, err := net.ListenPacket("udp", ":29500")
     if err != nil {
         fmt.Println("Error listening")
@@ -32,7 +33,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
     fmt.Println("Backup started")
 
     timer := time.NewTimer(10*time.Second)
-    go bcast.RunBroadcast(hallassigner.ChanElevator1, hallassigner.ElevatorTransmitPort) //Bytte navn på disse adressene
+    go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
    
     // Run backup elevator too
     for {
@@ -43,7 +44,6 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
            
         case a := <-ChanButtons:
             fmt.Printf("Order: %+v\n", a)  
-            fmt.Println("MASTERHALLREQUESTS", hallassigner.MasterHallRequests)
             fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
            
         case a := <-ChanFloors:
@@ -55,7 +55,6 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
             fmt.Printf("Obstructing: %+v\n", a)
             fsm.ObstructionIndicator = a
                 
-        
         default:
             conn.SetReadDeadline(time.Now().Add(10 * time.Second))
             _, _, err := conn.ReadFrom(buffer)
@@ -86,7 +85,7 @@ func SetToPrimary() {
     for {
         _, err := conn.Write([]byte("Primary alive"))
         if err != nil {
-            fmt.Println("error sending in primary")
+            fmt.Println("Error sending in primary")
         }
 
         fmt.Println("Doing primarystuff")

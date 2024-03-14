@@ -27,21 +27,21 @@ type HRAInput struct {
 }
 
 var(
+	// Initialization of variables
 	MasterHallRequests [elevio.N_FLOORS][2]bool
 	AllElevators = make(map[string]HRAElevState)
 	LastValidFloor int
 
 	// Master recieve channel
-	ChanRecieveElevator chan elevio.Elevator
-	ChanElevator1 = make(chan elevio.Elevator) //BYTTE NAVN
-	ChanElevator2 = make(chan elevio.Elevator) // BYTTE NAVN
+	ChanElevatorTX = make(chan elevio.Elevator)
+	ChanElevatorRX = make(chan elevio.Elevator)
 	
 	// Mutex
 	HallRequestMutex sync.Mutex
 	CostMutex sync.Mutex
 	ElevatorMutex sync.Mutex
 
-	// Used port addresses
+	// Port addresses
 	ElevatorTransmitPort int = 1659
 
 	// Cost function - input and output
@@ -107,16 +107,17 @@ func CostFunction(){
 }	
 
 func ButtonIdentifier(chanButtonRequests chan elevio.ButtonEvent, chanHallRequests chan elevio.ButtonEvent, chanCabRequests chan elevio.ButtonEvent) {
-
-	select {
-		case btnEvent := <-chanButtonRequests:
-			if btnEvent.Button == elevio.BT_Cab{
-				chanCabRequests <- btnEvent
-			} else{
-				chanHallRequests <- btnEvent
+	for{
+		select {
+			case btnEvent := <-chanButtonRequests:
+				if btnEvent.Button == elevio.BT_Cab{
+					chanCabRequests <- btnEvent
+				} else{
+					chanHallRequests <- btnEvent
+				}
 			}
 		}
-	}
+}
 
 
 func UpdateHallRequests(e elevio.Elevator){ 
@@ -132,7 +133,6 @@ func UpdateHallRequests(e elevio.Elevator){
 }
 
 func SendAssignedOrders(){
-	// Sends the New hall order to the given IP-address
 	for IP, NewHallOrders := range HRAOutput{
 		jsonData, err := json.Marshal(NewHallOrders)
 		if err != nil {
@@ -187,20 +187,20 @@ func RecieveNewAssignedOrders(){
 			}
 		}
 	}
-
 }
 
 func MasterReceive(){
 	ChanRecieveIP:= make(chan peers.PeerUpdate)
-	go bcast.Receiver(ElevatorTransmitPort, ChanElevator2)
-	go peers.Receiver(15646, ChanRecieveIP)
 	var IPaddress string
+
+	go bcast.Receiver(ElevatorTransmitPort, ChanElevatorRX)
+	go peers.Receiver(15646, ChanRecieveIP)
+
 	go func() {
 		for{
 			select{
 			case p:= <-ChanRecieveIP:
 				IPaddress = p.New
-				
 			}
 		}
 
@@ -208,10 +208,10 @@ func MasterReceive(){
 
 	for{
 		select{
-		case a:= <-ChanElevator2:
+		case a:= <-ChanElevatorRX:
 		
 			UpdateHallRequests(a)
-			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests) //Sjekk rosa markert kommentar i notability, kien
+			//fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests)
 
 			State := HRAElevState{
 				Behavior: elevio.EbToString(a.Behaviour),
@@ -219,7 +219,7 @@ func MasterReceive(){
 				Direction: elevio.ElevioDirnToString(a.Dirn),
 				CabRequests: a.CabRequests[:],
 			}
-			fmt.Println("NY IPADRESSE", IPaddress)
+			//fmt.Println("NY IPADRESSE", IPaddress)
 			ElevatorMutex.Lock()
 			AllElevators[IPaddress] = State 
 			ElevatorMutex.Unlock()

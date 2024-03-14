@@ -45,8 +45,7 @@ func main() {
 		select {
 		case a := <-ChanButtons:
 			fmt.Printf("Order: %+v\n", a)
-		
-			fmt.Println("MASTERHALLREQUESTS", hallassigner.MasterHallRequests)
+			//fmt.Println("MASTERHALLREQUESTS", hallassigner.MasterHallRequests)
 			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
 
 		case a := <-ChanFloors:

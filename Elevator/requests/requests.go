@@ -1,12 +1,13 @@
 package requests
 
+// Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
+
 import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	"sync"
 )
 
 var FsmMutex = sync.Mutex{}
-// Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
 
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) int {
 	switch e.Config.ClearRequestVariant {

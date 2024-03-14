@@ -1,10 +1,9 @@
 package bcast
 
 import (
-	//"Sanntidsprogrammering/Elevator/costfunctions"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
-	"Sanntidsprogrammering/Elevator/network/conn"
+	conn "Sanntidsprogrammering/Elevator/network/conn"
 	localip "Sanntidsprogrammering/Elevator/network/localip"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
 	"encoding/json"
@@ -14,10 +13,14 @@ import (
 	"os"
 	"reflect"
 	"time"
-	//backup "Sanntidsprogrammering/Elevator/backup"
+
 )
-var ID string
-var UpdatedElevator elevio.Elevator
+
+var( 
+		ID string
+		UpdatedElevator elevio.Elevator
+)
+
 const bufSize = 1024
 
 func Transmitter(port int, chans ...interface{}) {
@@ -82,8 +85,6 @@ func Receiver(port int, chans ...interface{}) {
 			Send: reflect.Indirect(v), 
 		}})
 
-		//fsm.RunningElevator = v.Elem().Interface().(elevio.Elevator)
-		//fmt.Println("Running Elevator:", fsm.RunningElevator)
 		time.Sleep(3)
 	}
 }
@@ -165,18 +166,16 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	peerTxEnable := make(chan bool) 
 
 	go peers.Transmitter(15646, ID, peerTxEnable)
-	go peers.Receiver(15646, peerUpdateCh) //156476
+	go peers.Receiver(15646, peerUpdateCh)
 
 	ElevatorMessageRX := make(chan elevio.Elevator)
 
-	go Transmitter(addr, ElevatorMessageTX) //16569
+	go Transmitter(addr, ElevatorMessageTX) 
 	go Receiver(addr, ElevatorMessageRX)
 	
 
 	go func() {
 		for {
-
-			fmt.Println("ID", ID)
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
 
@@ -196,7 +195,6 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 		case a := <-ElevatorMessageRX: 
 			fmt.Printf("Received: %#v\n", a)
 			UpdatedElevator = a
-			
 		}
 	}
 }
