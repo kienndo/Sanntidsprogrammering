@@ -18,7 +18,7 @@ go run main.go
 ### Notes
 After running the code from the first computer, which will be the *primary*, the other elevators should wait until primary has signalized it has started. This signal will be shown in primary's terminal as
 ````
-The system is ready, push a button :)
+The system is ready, push a button 
 ````
 
 ## Missing parts and pseudo code

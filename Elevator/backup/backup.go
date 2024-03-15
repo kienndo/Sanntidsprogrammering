@@ -32,7 +32,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 	_, _, err = conn.ReadFrom(buffer)
 	if err != nil {
 
-		fmt.Println("The system is ready, push a button :)")
+		fmt.Println("The system is ready, push a button")
 		fmt.Println("Becoming primary")
 
 		return
