@@ -1,11 +1,12 @@
 # TTK4145 - ELEVATOR PROJECT
 ## GROUP 63:
-- Ingrid Kristine Bøe @ingriKBo
-- Kien Ninh Do @kiennd
-- Siri Helene Wahl @sirihelenew
+- Ingrid Kristine Bøe [@ingriKBo](https://github.com/IngriKBo)
+- Kien Ninh Do [@kiennd](https://github.com/kienndo)
+- Siri Helene Wahl [@sirihelenew](https://github.com/sirihelenew)
 
 ## Usage
 ### Installation
+
 ### Dependencies
 ### Build and Run
 
@@ -18,7 +19,7 @@
 
 and the given secondary requirement
 
-   1. **Calls should be served as efficiently as possible**.
+5. **Calls should be served as efficiently as possible**.
 
 ## Solution
 Our code is written in `Golang`, which was a decision based on its efficiency for concurrent programming. The main features of our code are presented below:
@@ -31,4 +32,4 @@ The first computer that runs the program will become the master and run the prim
 Currently, if the master terminal is killed, both other computers take over as primary. Ideally, only one of them should become the primary and the other a backup, but we were unsuccessful in implementing this.
 
 ### Notes regarding the code
-We were unable to successfully implement the code for handling disconnections. For this reason, we have included pseudo code to maintain the code quality in the original code.
+We were unable to successfully implement the code that was supposed to handle disconnections. For this reason, we have included a pseudo code to maintain the code quality in the original code.
