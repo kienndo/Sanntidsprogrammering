@@ -44,7 +44,6 @@ func SendAssignedOrders(HRAOutput map[string][][2]bool){
 	}()
 }
 	
-
 func RecieveAssignedOrders(){
 	HRAMutex.Lock()
 	HRAMutex.Unlock() 
@@ -70,4 +69,47 @@ func RecieveAssignedOrders(){
 			}
 		}
 	}
+
+
+func MakeCabRequestsArray(e elevio.Elevator) []bool{
+
+	CabRequests := make([]bool, elevio.N_FLOORS)
+ 
+	 for i := 0; i < elevio.N_FLOORS; i++ {
+		 CabRequests[i] = e.Request[i][2]
+	 }
+	 return CabRequests
+ }
+ 
+
+func MasterSendHallLights(ChanMasterHallRequestsTX chan [elevio.N_FLOORS][2]bool){
+	MasterHallRequestMutex.Lock()
+	MasterHallRequestMutex.Unlock()
+
+	go bcast.Transmitter(MasterHallRequestsPort, ChanMasterHallRequestsTX)
+	for{
+		ChanMasterHallRequestsTX <- MasterHallRequests
+	}
+	
+}
+
+func UpdateHallLights(ChanMasterHallRequestsRX chan [elevio.N_FLOORS][2]bool){ 
+
+	go bcast.Receiver(MasterHallRequestsPort, ChanMasterHallRequestsRX)
+	for {
+		select {
+		case HallRequest := <-ChanMasterHallRequestsRX:
+			for floor := 0; floor < elevio.N_FLOORS; floor++ {
+				for btn := 0; btn < 2; btn++ {
+					if HallRequest[floor][btn] == true {
+						elevio.SetButtonLamp(elevio.ButtonType(btn), floor, true)
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
 		

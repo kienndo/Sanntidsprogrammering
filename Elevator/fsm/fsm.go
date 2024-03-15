@@ -22,7 +22,6 @@ var (
 			DoorOpenDuration:    3.0,
 			ClearRequestVariant: elevio.CV_All,
 		},
-		//CabRequests: [elevio.N_FLOORS]bool{false, false, false, false},
 		HallRequests: [elevio.N_FLOORS][2]bool{{false, false},
 												{false, false},
 												{false, false},
@@ -65,7 +64,6 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 		} else {
 			if btn_type == 2 {
 				RunningElevator.Request[btn_Floor][btn_type] = true
-				//RunningElevator.CabRequests[btn_Floor] = true
 			} else {
 				RunningElevator.HallRequests[btn_Floor][btn_type] = true
 			}
@@ -73,14 +71,12 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 	case elevio.EB_Moving:
 		if btn_type == 2 {
 			RunningElevator.Request[btn_Floor][btn_type] = true
-			//RunningElevator.CabRequests[btn_Floor] = true
 		} else {
 			RunningElevator.HallRequests[btn_Floor][btn_type] = true
 		}
 	case elevio.EB_Idle:
 		if btn_type == 2 {
 			RunningElevator.Request[btn_Floor][btn_type] = true
-			//RunningElevator.CabRequests[btn_Floor] = true
 		} else {
 			RunningElevator.HallRequests[btn_Floor][btn_type] = true
 		}
@@ -137,7 +133,6 @@ func FsmOnDoorTimeout() {
 			SetAllLights(RunningElevator)
 		case elevio.EB_Idle:
 			elevio.SetDoorOpenLamp(false)
-			fmt.Println("fuck u")
 			elevio.SetMotorDirection(RunningElevator.Dirn)
 		case elevio.EB_Moving:
 			elevio.SetDoorOpenLamp(false)
