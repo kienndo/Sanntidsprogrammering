@@ -36,7 +36,7 @@ func main() {
 	go elevio.PollFloorSensor(ElevatorEventsChannels.ChanFloors)
 	go elevio.PollObstructionSwitch(ElevatorEventsChannels.ChanObstr)
 	 
-	go costfunctions.HandleElevatorEvents(ElevatorEventsChannels)
+	//go costfunctions.HandleElevatorEvents(ElevatorEventsChannels)
 
 	// Timer
 	go fsm.CheckForTimeout()
