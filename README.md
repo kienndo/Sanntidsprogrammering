@@ -1,8 +1,4 @@
-# TTK4145 - ELEVATOR PROJECT
-## GROUP 63:
-- Ingrid Kristine Bøe 
-- Kien Ninh Do 
-- Siri Helene Wahl 
+# TTK4145 - ELEVATOR PROJECT, GROUP 63
 
 ## Usage
 
