@@ -72,11 +72,14 @@ func SetToPrimary(ChanElevatorRX chan elevio.Elevator, ChanMasterHallRequestsTX 
         fmt.Println("MASTER HALLREQUESTS: ", hallassigner.MasterHallRequests)
 		MasterIPAddress, _ := localip.LocalIP()
 		MasterID := fmt.Sprintf("%s:%d", MasterIPAddress, os.Getpid())
+
+        ElevatorCabs := hallassigner.MakeCabRequestsArray(fsm.RunningElevator)
+
 		hallassigner.AllElevators[MasterID] = hallassigner.HRAElevState{
 			Behavior:    elevio.EbToString(fsm.RunningElevator.Behaviour),
 			Floor:       fsm.RunningElevator.Floor,
 			Direction:   elevio.ElevioDirnToString(fsm.RunningElevator.Dirn),
-			CabRequests: fsm.RunningElevator.CabRequests[:],
+			CabRequests: ElevatorCabs,
 		}
 		hallassigner.CostFunction()
         

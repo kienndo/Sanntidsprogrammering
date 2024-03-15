@@ -25,6 +25,7 @@ type HRAInput struct {
 func InitMasterHallRequests(){
 	MasterHallRequestMutex.Lock()
 	MasterHallRequestMutex.Unlock()
+
 	for i := 0; i<elevio.N_FLOORS; i++{
 		for j:= 0; j<2; j++{
 			
@@ -127,12 +128,13 @@ func MasterReceive(ChanElevatorRX chan elevio.Elevator){
 		case ElevUpdate:= <-ChanElevatorRX:
 			InitMasterHallRequests()
 			UpdateHallRequests(ElevUpdate)
+			ElevatorCabs := MakeCabRequestsArray(ElevUpdate)
 
 			State := HRAElevState{
 				Behavior: elevio.EbToString(ElevUpdate.Behaviour),
 				Floor: ElevUpdate.Floor,
 				Direction: elevio.ElevioDirnToString(ElevUpdate.Dirn),
-				CabRequests: ElevUpdate.CabRequests[:],
+				CabRequests: ElevatorCabs,
 			}
 
 			ElevatorMutex.Lock()
@@ -142,6 +144,17 @@ func MasterReceive(ChanElevatorRX chan elevio.Elevator){
 		}
 	}
 }
+
+func MakeCabRequestsArray(e elevio.Elevator) []bool{
+
+	CabRequests := make([]bool, elevio.N_FLOORS)
+ 
+	 for i := 0; i < elevio.N_FLOORS; i++ {
+		 CabRequests[i] = e.Request[i][2]
+	 }
+	 return CabRequests
+ }
+ 
 
 func MasterSendHallLights(ChanMasterHallRequestsTX chan [elevio.N_FLOORS][2]bool){
 	MasterHallRequestMutex.Lock()
