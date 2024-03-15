@@ -35,9 +35,9 @@ func InitMasterHallRequests(){
 }
 
 var(
-		// Port addresses
-		ElevatorPort int = 1659
-		MasterHallRequestsPort int = 1658
+	// Port addresses
+	ElevatorPort int = 1659
+	MasterHallRequestsPort int = 1658
 
 )
 

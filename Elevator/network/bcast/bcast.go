@@ -174,12 +174,12 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
-			fmt.Println("HALLREQUESTS BEFORE: ", fsm.RunningElevator.HallRequests)
+			
 			for i:= 0; i<elevio.N_FLOORS; i++{
 				for j:= 0; j<2; j++{
 					requests.RequestMutex.Lock()
 					fsm.RunningElevator.HallRequests[i][j] = false
-					fmt.Println("HALLREQUESTS AFTER: ", fsm.RunningElevator.HallRequests)
+					
 					requests.RequestMutex.Unlock()
 				}
 			}

@@ -4,7 +4,6 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
-	"fmt"
 	"sync"
 )
 
@@ -101,7 +100,7 @@ func FsmOnFloorArrival(newFloor int) {
 
 	RunningElevator.Floor = newFloor
 	elevio.SetFloorIndicator(RunningElevator.Floor)
-	fmt.Println("REQUESTS: ", RunningElevator.Request)
+	
 
 	switch RunningElevator.Behaviour {
 	case elevio.EB_Moving:
@@ -109,7 +108,7 @@ func FsmOnFloorArrival(newFloor int) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			elevio.SetDoorOpenLamp(true)
 			RunningElevator = requests.ClearAtCurrentFloor(RunningElevator)
-			fmt.Println("REQUESTS AFTER: ", RunningElevator.Request)
+			
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 			SetAllLights(RunningElevator)
 			RunningElevator.Behaviour = elevio.EB_DoorOpen

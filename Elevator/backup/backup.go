@@ -43,7 +43,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 	timer := time.NewTimer(2 * time.Second)
 	go bcast.RunBroadcast(ChanElevatorTX, hallassigner.ElevatorPort)
     
-	//go hallassigner.UpdateHallLights(ChanMasterHallRequestsRX)
+	go hallassigner.UpdateHallLights(ChanMasterHallRequestsRX)
 
 	RunBackup(ChanButtons, ChanFloors, ChanObstr, conn, buffer, timer, ChanElevatorTX, ChanMasterHallRequestsRX)
 
@@ -69,7 +69,7 @@ func SetToPrimary(ChanElevatorRX chan elevio.Elevator, ChanMasterHallRequestsTX 
 		go hallassigner.MasterReceive(ChanElevatorRX)
         hallassigner.InitMasterHallRequests()
 		hallassigner.UpdateHallRequests(fsm.RunningElevator)
-        fmt.Println("MASTER HALLREQUESTS: ", hallassigner.MasterHallRequests)
+ 
 		MasterIPAddress, _ := localip.LocalIP()
 		MasterID := fmt.Sprintf("%s:%d", MasterIPAddress, os.Getpid())
 
@@ -83,7 +83,7 @@ func SetToPrimary(ChanElevatorRX chan elevio.Elevator, ChanMasterHallRequestsTX 
 		}
 		hallassigner.CostFunction()
         
-		//go hallassigner.MasterSendHallLights(ChanMasterHallRequestsTX)
+		go hallassigner.MasterSendHallLights(ChanMasterHallRequestsTX)
 
 		time.Sleep(1 * time.Second)
 	}
