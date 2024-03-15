@@ -13,22 +13,21 @@ import (
 	"time"
 )
 
-
+var PrimaryPort int = 29502
 var PortMasterID int = 16666
 
 // Functions for process pairs and indicating primary and backup
 
 func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, ChanObstr chan bool) {
 
-    
-    conn, err := net.ListenPacket("udp", ":29502")
+    conn, err := net.ListenPacket("udp", fmt.Sprintf(":%d",PrimaryPort))
     if err != nil {
         fmt.Println("Error listening")
     }
     defer conn.Close()
 
     buffer := make([]byte, 1024)
-    conn.SetReadDeadline(time.Now().Add(5*time.Second))
+    conn.SetReadDeadline(time.Now().Add(2*time.Second))
 
     _, _, err = conn.ReadFrom(buffer) 
     if err != nil {
@@ -41,7 +40,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
-    go hallassigner.UpdateHallLights()
+    go hallassigner.UpdateHallLights() // WORK IN PROGRESS
    
     // Run backup elevator too
     for {
@@ -81,9 +80,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
 func SetToPrimary() {
 
-    time.Sleep(5*time.Second)
-
-    conn, err := net.Dial("udp", "10.100.23.255:29502") //Burde kanskje egt ikke kjøre en statisk IP-adresse?
+    conn, err := net.Dial("udp", fmt.Sprintf("10.100.23.255:%d", PrimaryPort))
     if err != nil {
         fmt.Println("Error dialing UDP")
     }
@@ -111,7 +108,7 @@ func SetToPrimary() {
         }
         hallassigner.CostFunction()
         go hallassigner.MasterSendHallLights()
-    
+        
         time.Sleep(1*time.Second)
     }
 }
