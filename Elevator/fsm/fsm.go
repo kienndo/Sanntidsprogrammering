@@ -11,28 +11,28 @@ import (
 // Initialization
 var (
 	RunningElevator = elevio.Elevator{
-		Floor: -1,
-		Dirn:  elevio.MD_Stop,
+		Floor:     -1,
+		Dirn:      elevio.MD_Stop,
 		Behaviour: elevio.EB_Idle,
-		Request: [elevio.N_FLOORS][elevio.N_BUTTONS]bool{{false, false, false}, 
-														{false, false, false}, 
-														{false, false, false}, 
-														{false, false, false}},
+		Request: [elevio.N_FLOORS][elevio.N_BUTTONS]bool{{false, false, false},
+			{false, false, false},
+			{false, false, false},
+			{false, false, false}},
 		Config: elevio.Config{
 			DoorOpenDuration:    3.0,
 			ClearRequestVariant: elevio.CV_All,
 		},
 		CabRequests: [elevio.N_FLOORS]bool{false, false, false, false},
 		HallRequests: [elevio.N_FLOORS][2]bool{{false, false},
-												{false, false},	
+												{false, false},
 												{false, false},
 												{false, false}},
 	}
 	ObstructionIndicator bool
-	OrderMutex sync.Mutex
+	OrderMutex           sync.Mutex
 )
 
-// Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
+// Translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
 
 func SetAllLights(es elevio.Elevator) {
 	for floor := 0; floor < elevio.N_FLOORS; floor++ {
@@ -58,31 +58,29 @@ func FsmOnInitBetweenFloors() {
 }
 
 func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
-	OrderMutex.Lock()
-	OrderMutex.Unlock()
 	switch RunningElevator.Behaviour {
 	case elevio.EB_DoorOpen:
 		if requests.ShouldClearImmediately(RunningElevator, btn_Floor, btn_type) != 0 {
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 		} else {
-			if btn_type == 2{
+			if btn_type == 2 {
 				RunningElevator.Request[btn_Floor][btn_type] = true
-				RunningElevator.CabRequests[btn_Floor]= true
+				RunningElevator.CabRequests[btn_Floor] = true
 			} else {
 				RunningElevator.HallRequests[btn_Floor][btn_type] = true
 			}
 		}
 	case elevio.EB_Moving:
-		if btn_type == 2{
+		if btn_type == 2 {
 			RunningElevator.Request[btn_Floor][btn_type] = true
-			RunningElevator.CabRequests[btn_Floor]= true
+			RunningElevator.CabRequests[btn_Floor] = true
 		} else {
 			RunningElevator.HallRequests[btn_Floor][btn_type] = true
 		}
 	case elevio.EB_Idle:
-		if btn_type == 2{
+		if btn_type == 2 {
 			RunningElevator.Request[btn_Floor][btn_type] = true
-			RunningElevator.CabRequests[btn_Floor]= true
+			RunningElevator.CabRequests[btn_Floor] = true
 		} else {
 			RunningElevator.HallRequests[btn_Floor][btn_type] = true
 		}
@@ -104,12 +102,10 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 }
 
 func FsmOnFloorArrival(newFloor int) {
-	OrderMutex.Lock()
-	OrderMutex.Unlock()
+
 	RunningElevator.Floor = newFloor
 	elevio.SetFloorIndicator(RunningElevator.Floor)
 	fmt.Println("REQUESTS: ", RunningElevator.Request)
-	fmt.Println("HALLREQUESTS: ", RunningElevator.HallRequests)
 
 	switch RunningElevator.Behaviour {
 	case elevio.EB_Moving:
@@ -117,7 +113,7 @@ func FsmOnFloorArrival(newFloor int) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			elevio.SetDoorOpenLamp(true)
 			RunningElevator = requests.ClearAtCurrentFloor(RunningElevator)
-			fmt.Println("NEWREQUESTS: ", RunningElevator.Request)
+			fmt.Println("REQUESTS AFTER: ", RunningElevator.Request)
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 			SetAllLights(RunningElevator)
 			RunningElevator.Behaviour = elevio.EB_DoorOpen
@@ -141,6 +137,7 @@ func FsmOnDoorTimeout() {
 			SetAllLights(RunningElevator)
 		case elevio.EB_Idle:
 			elevio.SetDoorOpenLamp(false)
+			fmt.Println("fuck u")
 			elevio.SetMotorDirection(RunningElevator.Dirn)
 		case elevio.EB_Moving:
 			elevio.SetDoorOpenLamp(false)
@@ -154,7 +151,7 @@ func FsmOnDoorTimeout() {
 func CheckForTimeout() {
 	for {
 		if timer.TimerTimedOut() != 0 {
-			for ObstructionIndicator{
+			for ObstructionIndicator {
 				FsmObstruction(ObstructionIndicator)
 			}
 			timer.TimerStop()
@@ -163,9 +160,8 @@ func CheckForTimeout() {
 	}
 }
 
-func FsmObstruction(a bool){
-	if a && RunningElevator.Behaviour == elevio.EB_DoorOpen{
+func FsmObstruction(a bool) {
+	if a && RunningElevator.Behaviour == elevio.EB_DoorOpen {
 		timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 	}
 }
-

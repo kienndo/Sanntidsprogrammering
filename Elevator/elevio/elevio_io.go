@@ -26,7 +26,7 @@ type Elevator struct {
 	Behaviour ElevatorBehaviour 		
 	Request [N_FLOORS][N_BUTTONS]bool
 	HallRequests [N_FLOORS][2]bool
-	CabRequests [N_FLOORS]bool		
+	CabRequests [N_FLOORS]bool	
 	Config Config 						
 }
 
@@ -177,7 +177,6 @@ func GetStop() bool {
 	a := read([4]byte{8, 0, 0, 0})
 	return toBool(a[1])
 }
-
 
 func GetObstruction() bool {
 	a := read([4]byte{9, 0, 0, 0})

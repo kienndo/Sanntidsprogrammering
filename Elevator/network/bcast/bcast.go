@@ -6,6 +6,7 @@ import (
 	conn "Sanntidsprogrammering/Elevator/network/conn"
 	localip "Sanntidsprogrammering/Elevator/network/localip"
 	peers "Sanntidsprogrammering/Elevator/network/peers"
+	requests "Sanntidsprogrammering/Elevator/requests"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -17,8 +18,7 @@ import (
 )
 
 var( 
-		ID string
-		//UpdatedElevator elevio.Elevator
+	ID string
 )
 
 const bufSize = 1024
@@ -93,7 +93,6 @@ type typeTaggedJSON struct {
 	JSON   []byte
 }
 
-
 func checkArgs(chans ...interface{}){
 	n := 0
 	for range chans {
@@ -121,7 +120,6 @@ func checkArgs(chans ...interface{}){
 		elemTypes[i] = elemType
 
 		checkTypeRecursive(elemType, []int{i+1})
-
 	}
 }
 
@@ -171,12 +169,21 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 	go Transmitter(addr, ElevatorMessageTX) 
 	go Receiver(addr, ElevatorMessageRX)
 	
-
 	go func() {
 		for {
+
 			ElevatorMessage := fsm.RunningElevator
 			ElevatorMessageTX <- ElevatorMessage
-
+			fmt.Println("HALLREQUESTS BEFORE: ", fsm.RunningElevator.HallRequests)
+			for i:= 0; i<elevio.N_FLOORS; i++{
+				for j:= 0; j<2; j++{
+					requests.RequestMutex.Lock()
+					fsm.RunningElevator.HallRequests[i][j] = false
+					fmt.Println("HALLREQUESTS AFTER: ", fsm.RunningElevator.HallRequests)
+					requests.RequestMutex.Unlock()
+				}
+			}
+			
 			time.Sleep(1 * time.Second)
 		}
 	}()
@@ -194,4 +201,3 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 		}
 	}
 }
-

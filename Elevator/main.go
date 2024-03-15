@@ -1,15 +1,28 @@
 package main
 
 import (
+	backup "Sanntidsprogrammering/Elevator/backup"
 	elevio "Sanntidsprogrammering/Elevator/elevio"
+	elevrun "Sanntidsprogrammering/Elevator/elevrun"
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
-	backup "Sanntidsprogrammering/Elevator/backup"
-	"fmt"
-
 )
 
+type HardwareChannels struct {
+	ChanButtons chan elevio.ButtonEvent
+	ChanFloors  chan int
+	ChanObstr   chan bool
+}
+
+type AssignerChannels struct {
+	ChanElevatorTX           chan elevio.Elevator
+	ChanElevatorRX           chan elevio.Elevator
+	ChanMasterHallRequestsTX chan [elevio.N_FLOORS][2]bool
+	ChanMasterHallRequestsRX chan [elevio.N_FLOORS][2]bool
+}
+
 func main() {
+
 	//Initialization
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
@@ -20,42 +33,33 @@ func main() {
 	fsm.InitializeLights()
 
 	//Creating channels
-	ChanButtons := make(chan elevio.ButtonEvent)
-	ChanFloors := make(chan int)
-	ChanObstr := make(chan bool)
-	
-	//Polling 
-	go elevio.PollButtons(ChanButtons)
-	go elevio.PollFloorSensor(ChanFloors)
-	go elevio.PollObstructionSwitch(ChanObstr)
-	
+	HardwareChannels := HardwareChannels{
+		ChanButtons: make(chan elevio.ButtonEvent),
+		ChanFloors:  make(chan int),
+		ChanObstr:   make(chan bool),
+	}
+
+	AssignerChannels := AssignerChannels{
+		ChanElevatorTX:           make(chan elevio.Elevator),
+		ChanElevatorRX:           make(chan elevio.Elevator),
+		ChanMasterHallRequestsTX: make(chan [elevio.N_FLOORS][2]bool),
+		ChanMasterHallRequestsRX: make(chan [elevio.N_FLOORS][2]bool),
+	}
+
+	//Polling
+	go elevio.PollButtons(HardwareChannels.ChanButtons)
+	go elevio.PollFloorSensor(HardwareChannels.ChanFloors)
+	go elevio.PollObstructionSwitch(HardwareChannels.ChanObstr)
+
 	// Timer
 	go fsm.CheckForTimeout()
 
 	//Primary and backup
-	backup.ListenForPrimary(ChanButtons, ChanFloors, ChanObstr)
-	go backup.SetToPrimary()
-	go hallassigner.RecieveNewAssignedOrders()
+	backup.ListenForPrimary(HardwareChannels.ChanButtons, HardwareChannels.ChanFloors, HardwareChannels.ChanObstr,
+		AssignerChannels.ChanElevatorTX, AssignerChannels.ChanMasterHallRequestsRX)
+	go backup.SetToPrimary(AssignerChannels.ChanElevatorRX, AssignerChannels.ChanMasterHallRequestsTX)
+	go hallassigner.RecieveAssignedOrders()
 
-	// Run elevator
-	for {
-		
-		select {
-		case a := <-ChanButtons:
-			fmt.Printf("Order: %+v\n", a)
-			fsm.FsmOnRequestButtonPress(a.Floor, a.Button)
-			
+	elevrun.RunElevator(HardwareChannels.ChanButtons, HardwareChannels.ChanFloors, HardwareChannels.ChanObstr)
 
-		case a := <-ChanFloors:
-			hallassigner.SetLastValidFloor(a)
-			fmt.Printf("Floor: %+v\n", a)
-			fsm.FsmOnFloorArrival(a)
-			
-		case a := <-ChanObstr:
-			fmt.Printf("Obstructing: %+v\n", a)
-			fsm.ObstructionIndicator = a
-		}
 }
-}
-
-
