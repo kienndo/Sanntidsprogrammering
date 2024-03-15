@@ -10,7 +10,6 @@ import (
 	localip "Sanntidsprogrammering/Elevator/network/localip"
 	"encoding/json"
 	"fmt"
-	"net"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -34,6 +33,7 @@ var(
 	AllElevators = make(map[string]HRAElevState)
 	LastValidFloor int
 	PortMasterID int = 16666
+	Input HRAInput
 
 	// Master channels
 	ChanElevatorTX = make(chan elevio.Elevator)
@@ -46,14 +46,12 @@ var(
 	CostMutex sync.Mutex
 	ElevatorMutex sync.Mutex
 	MasterMutex sync.Mutex
+	HRAMutex sync.Mutex
 
 	// Port addresses
 	ElevatorTransmitPort int = 1659
 	MasterHallRequestsPort int = 1658
 
-	// Cost function - input and output
-	HRAOutput map[string][][2]bool
-	Input HRAInput
 )
 
 func InitMasterHallRequests(){
@@ -106,7 +104,8 @@ func CostFunction(){
     for k, v := range *output {
         fmt.Printf("%6v :  %+v\n", k, v)
     }
-	HRAOutput = *output
+	HRAOutput := *output
+	go SendAssignedOrders(HRAOutput)
 	
 }	
 
@@ -122,81 +121,52 @@ func UpdateHallRequests(e elevio.Elevator){
 	}
 }
 
-func SendAssignedOrders(){
+func SendAssignedOrders(HRAOutput map[string][][2]bool){
+	ChanAssignedOrders := make(chan map[string][][2]bool)
 	
-	for IP, NewHallOrders := range HRAOutput{
-		fmt.Println("ASSIGNED ORDERS: ", NewHallOrders)
-		jsonData, err := json.Marshal(NewHallOrders)
-		if err != nil {
-			return 
-		}
-		fmt.Println("IPSENDES: ", IP)
-		udpAddr, err := net.ResolveUDPAddr("udp", IP) // Sends to the given IP - address
-		if err != nil {
-			return
-		}
+	go bcast.Transmitter(16667, ChanAssignedOrders)
+	fmt.Println("PROBLEM")
 
-		conn, err := net.DialUDP("udp", nil, udpAddr)
-		if err != nil {
-			return 
-		}
-		defer conn.Close()
+	go func() {
+		for {
+			HRAMutex.Lock()
+			ChanAssignedOrders <- HRAOutput
+			HRAMutex.Unlock()
 
-		_, err = conn.Write(jsonData)
-		if err != nil {
-			return 
+			time.Sleep(1 * time.Second)
 		}
-
-	}
+	}()
 }
+	
 
 func RecieveNewAssignedOrders(){
-	fmt.Println("TEST")
-	var MasterID string
-	//MasterID := GetMasterIP()
-	if MasterID == "" { 
-		localIP, err := localip.LocalIP() 
-		if err != nil {
-			fmt.Println(err)
-			localIP = "DISCONNECTED"
-		}
-		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getpid())
-	}
-	fmt.Println("IPUUUUUT: ", MasterID)
-	addr, err := net.ResolveUDPAddr("udp", MasterID) // Denne vil ikke ta inn MASTERID?
-	
-		if err != nil{
-			fmt.Println("Error resolving UDP address: ", err)
-			return
-		}
+	HRAMutex.Lock()
+	HRAMutex.Unlock()
+	ChanAssignedOrdersRec := make(chan map[string][][2]bool)
 
-		conn, err := net.ListenUDP("udp", addr)
-		if err != nil{
-		fmt.Println("Error listening for UDP packets: ", err)
-		return
-	}
-	defer conn.Close()
+	go bcast.Receiver(16667, ChanAssignedOrdersRec)
 
 	for{
-		buffer := make([]byte, 2048)
-		n, _, _ := conn.ReadFromUDP(buffer)
+		select{
+		case p:= <-ChanAssignedOrdersRec:
+			fmt.Println("KOM SEG INN")
+			for IP, AssignedHallRequests := range p{
+				LocalIP, _ := localip.LocalIP()
+				if IP == fmt.Sprintf("%s:%d", LocalIP, os.Getpid()){
+					for i := 0; i < elevio.N_FLOORS; i++{
+							for j:=0; j<2; j++{
+								if AssignedHallRequests[i][j] == true{
+								fsm.RunningElevator.Request[i][j]=true
+								fmt.Println("REQUEST: ", fsm.RunningElevator.Request)
+								}
+							}
+						}
 
-		var AssignedHallRequests [][2]bool
-		if err := json.Unmarshal(buffer[:n], &AssignedHallRequests); err != nil {
-			fmt.Println("Error decoding JSON", err)
-			continue
-		}
-		fmt.Println("RECIEVED ORDERS: ", AssignedHallRequests)
-		for i := 0; i < elevio.N_FLOORS; i++{
-			for j:=0; j<2; j++{
-				if AssignedHallRequests[i][j] == true{
-					fsm.RunningElevator.Request[i][j]=true
 				}
 			}
 		}
-		fmt.Println("REQUEST: ", fsm.RunningElevator.Request)
-		}
 	}
+}
 		
 	
 
@@ -242,13 +212,16 @@ func MasterReceive(){
 }
 
 func MasterSendHallLights(){
-	ChanMasterHallRequestsTX <- MasterHallRequests
-	bcast.Transmitter(MasterHallRequestsPort, ChanMasterHallRequestsTX)
+	go bcast.Transmitter(MasterHallRequestsPort, ChanMasterHallRequestsTX)
+	for{
+		ChanMasterHallRequestsTX <- MasterHallRequests
+	}
+	
 }
 
 func UpdateHallLights(){ 
 
-	bcast.Receiver(MasterHallRequestsPort, ChanMasterHallRequestsRX)
+	go bcast.Receiver(MasterHallRequestsPort, ChanMasterHallRequestsRX)
 	for {
 		select {
 		case a := <-ChanMasterHallRequestsRX:
@@ -256,23 +229,12 @@ func UpdateHallLights(){
 				for btn := 0; btn < 2; btn++ {
 					if a[floor][btn] == true {
 						elevio.SetButtonLamp(elevio.ButtonType(btn), floor, true)
+						}
 					}
 				}
 			}
 		}
 	}
-}
 
-func GetMasterIP() string {
-	ChanMasterIDRX := make(chan string)
 
-	go bcast.Receiver(16666, ChanMasterIDRX)
-	for {
-		select{
-		case p := <-ChanMasterIDRX:
-			time.Sleep(1*time.Second)
-			return p
-		}
-	}
-}
 

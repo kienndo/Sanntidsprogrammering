@@ -93,8 +93,6 @@ func SetToPrimary() {
 
     defer conn.Close()
     
-    
-    go MasterSendID()
     //go hallassigner.RecieveNewAssignedOrders()
     
     for {
@@ -118,11 +116,8 @@ func SetToPrimary() {
             
         }
         hallassigner.CostFunction()
-        hallassigner.SendAssignedOrders()
-        hallassigner.MasterSendHallLights()
+        go hallassigner.MasterSendHallLights()
     
-
-
         time.Sleep(1*time.Second)
     }
 }
@@ -130,28 +125,8 @@ func SetToPrimary() {
 func SleepRandomDuration() {
 
     rand.Seed(time.Now().UnixNano())
-    duration := time.Duration(rand.Intn(5))*time.Second
+    duration := time.Duration(rand.Intn(2))*time.Second
 
     time.Sleep(duration)
 
-}
-
-func MasterSendID(){
-    var MasterID string
-    ChanMasterIDTX := make(chan string)
-    if MasterID == "" { 
-		localIP, err := localip.LocalIP() 
-		if err != nil {
-			fmt.Println(err)
-			localIP = "DISCONNECTED"
-		}
-		MasterID = fmt.Sprintf("%s:%d", localIP, os.Getppid())
-	}
-    fmt.Println("MASTERID: ", MasterID)
-    go bcast.Transmitter(PortMasterID, ChanMasterIDTX)
-    
-    for{
-            ChanMasterIDTX <- MasterID
-        }
-    
 }
