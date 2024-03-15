@@ -5,10 +5,21 @@
 - Siri Helene Wahl 
 
 ## Usage
-### Installation
 
-### Dependencies
-### Build and Run
+### Install and Run
+Download the repository and navigate to the project folder
+````
+cd [your path]/Sanntidsprogrammering/Elevator
+````
+Run the code with 
+````
+go run main.go
+````
+### Notes
+After running the code from the first computer the other elevators should wait until primary has signalized it has started. This signal will be shown in primary's terminal as
+````
+The system is ready, push a button :)
+````
 
 ## Project Description
 **Create software for controlling `n` elevators working in parallel across `m` floors**, with the given main requirements
