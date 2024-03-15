@@ -46,8 +46,8 @@ var(
 
 	ChanElevator1 = make(chan elevio.Elevator)
 	ChanElevator2 = make(chan elevio.Elevator)
-	Address1 int = 1659
-	Address2 int = 1658
+	Address1 int = 	1659
+	Address2 int = 	1658
 
 	HRAOutput 	map[string][][2]bool
 	Input 		HRAInput
@@ -67,30 +67,22 @@ func SetLastValidFloor(ValidFloor int) {
 	LastValidFloor = ValidFloor
 }
 
-func CostFunction(){
+func CostFunction() {
+    Input = HRAInput{
+        HallRequests: MasterHallRequests,
+        States:       AllElevators,
+    }
 
-	Input = HRAInput{
-		HallRequests: 	MasterHallRequests,
-		States: 		AllElevators,
-	}
-	// for id, elevator := range AllElevators {
-	// 	if !elevator.Unavailable {
-	// 		Input.States[id] = HRAElevState{
-	// 			Behavior: elevator.Behavior,
-	// 			Floor: elevator.Floor,
-	// 			Direction: elevator.Direction,
-	// 			CabRequests: elevator.CabRequests,
-	// 		}
-	// 	}
-	// }
+    fmt.Println("NEW INPUT:", Input)
 
-	fmt.Println("NEW INPUT:" , Input)
-
-	hraExecutable := ""
+    hraExecutable := ""
     switch runtime.GOOS {
-        case "linux":   hraExecutable  = "hall_request_assigner"
-        case "windows": hraExecutable  = "hall_request_assigner.exe"
-        default:        panic("OS not supported")
+    case "linux":
+        hraExecutable = "hall_request_assigner"
+    case "windows":
+        hraExecutable = "hall_request_assigner.exe"
+    default:
+        panic("OS not supported")
     }
 
     jsonBytes, err := json.Marshal(Input)
@@ -98,71 +90,76 @@ func CostFunction(){
         fmt.Println("json.Marshal error: ", err)
         return
     }
-    
+
     ret, err := exec.Command(hraExecutable, "-i", string(jsonBytes)).CombinedOutput()
     if err != nil {
         fmt.Println("exec.Command error: ", err)
         fmt.Println(string(ret))
         return
     }
-    
+
     output := new(map[string][][2]bool)
     err = json.Unmarshal(ret, &output)
     if err != nil {
         fmt.Println("json.Unmarshal error: ", err)
-        return 
+        return
     }
-        
+
     fmt.Printf("output: \n")
     for k, v := range *output {
         fmt.Printf("%6v :  %+v\n", k, v)
     }
-	HRAOutput = *output
-	
-	fmt.Println("NEW OUTPUT:" , HRAOutput)
-}	
+    HRAOutput = *output
 
-func ButtonIdentifier(
-	chanButtonRequests chan elevio.ButtonEvent, 
-	chanHallRequests chan elevio.ButtonEvent, 
-	chanCabRequests chan elevio.ButtonEvent) {
-	
-	select {
-		case btnEvent := <-chanButtonRequests:
-			if btnEvent.Button == elevio.BT_Cab {
-				chanCabRequests <- btnEvent
-			} else{
-				chanHallRequests <- btnEvent
-			}
+    fmt.Println("NEW OUTPUT:", HRAOutput)
+}
+
+
+func HandleElevatorEvents(ChanButtons <-chan elevio.ButtonEvent, 
+							ChanFloors <-chan int, 
+							ChanObstr <-chan bool) {
+	for {
+		select {
+		case btnEvent := <-ChanButtons:
+			fmt.Printf("Order: %+v\n", btnEvent)
+			fmt.Println("MASTERHALLREQUESTS", MasterHallRequests)
+			fsm.FsmOnRequestButtonPress(btnEvent.Floor, btnEvent.Button)
+
+		case floorEvent := <-ChanFloors:
+			SetLastValidFloor(floorEvent)
+			fmt.Printf("Floor: %+v\n", floorEvent)
+			fsm.FsmOnFloorArrival(floorEvent)
+
+		case obstructionEvent := <-ChanObstr:
+			fmt.Printf("Obstructing: %+v\n", obstructionEvent)
+			fsm.ObstructionIndicator = obstructionEvent
 		}
 	}
+}
+
 
 func ChooseConnection() {
-	// Sjekker om channel 1 er ledig
-	// Tries to establish a UDP packet listener on port 29503
 	conn, err := net.ListenPacket("udp",":29503")
-	// Error: Port is already in use
+	
 	if err != nil {
 		fmt.Println("Error listening to channel")
 	}
 	defer conn.Close()
 
 	buffer := make([]byte, 1024)
-	conn.SetReadDeadline(time.Now().Add(3*time.Second)) //If no data is received within 3 seconds, an error is returned
-	_, _, err = conn.ReadFrom(buffer) // Tries to read from conn
-	if err != nil { // If no data is received within 3 seconds 
-		// Channel 1
+	conn.SetReadDeadline(time.Now().Add(3*time.Second)) 
+	_, _, err = conn.ReadFrom(buffer) 
+	if err != nil { 
 		fmt.Println("Sending to channel 1") 
 		go ChannelTaken()
-		go bcast.RunBroadcast(ChanElevator1, Address1) //Kjøres bare en gang
-	} else { // no error, data recieved within 3 seconds
-		// Channel 2
+		go bcast.RunBroadcast(ChanElevator1, Address1) 
+	} else { 
 		fmt.Println("sending to channel 2")
 		go bcast.RunBroadcast(ChanElevator2, Address2)
 	}
 	time.Sleep(1*time.Millisecond)
 }
-// Channel 1 
+
 func ChannelTaken() {
 	for {
 		conn, err := net.Dial("udp", "10.100.23.255:29503")
@@ -299,6 +296,7 @@ func RecieveNewAssignedOrders(){
 	}
 
 }
+
 
 func MasterReceive(){
 	ChanRecieveIP:= make(chan peers.PeerUpdate)

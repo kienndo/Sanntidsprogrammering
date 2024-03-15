@@ -20,7 +20,6 @@ var (
 															{false, false, false}, 
 															{false, false, false}, 
 															{false, false, false}},
-		Unavailable: false,
 		Config: elevio.Config{
 			DoorOpenDuration:    3.0,
 			ClearRequestVariant: elevio.CV_All,

@@ -21,15 +21,14 @@ func main() {
 	}
 
 	//Creating channels
-	ChanButtons := make(chan elevio.ButtonEvent)
-	ChanFloors := make(chan int)
-	ChanObstr := make(chan bool)
-	ChanHallRequests := make(chan elevio.ButtonEvent)
-	ChanCabRequests := make(chan elevio.ButtonEvent)
-	//ElevatorUnavailable := make(chan bool) //Til watchdog
+	ElevatorEventsChannels := {
+		ChanButtons: 	make(chan elevio.ButtonEvent),
+		ChanFloors: 	make(chan int),
+		ChanObstr: 		make(chan bool),
+
+	}
 
 
-	
 	//Polling 
 	go elevio.PollButtons(ChanButtons)
 	go elevio.PollFloorSensor(ChanFloors)

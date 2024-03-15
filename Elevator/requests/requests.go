@@ -6,6 +6,7 @@ import (
 )
 
 var FsmMutex = sync.Mutex{}
+
 // Direct translation from C to Golang, retrieved from https://github.com/TTK4145/Project-resources/tree/master/elev_algo
 
 func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.ButtonType) int {
@@ -16,7 +17,7 @@ func ShouldClearImmediately(e elevio.Elevator, btn_floor int, btn_type elevio.Bu
 		}
 		return 0
 	case elevio.CV_InDirn:
-		if e.Floor == btn_floor &&
+		if 	e.Floor == btn_floor &&
 			(e.Dirn == elevio.MD_Up && btn_type == elevio.BT_HallUp) || 
 			(e.Dirn == elevio.MD_Down && btn_type == elevio.BT_HallDown) ||
 			e.Dirn == elevio.MD_Stop ||

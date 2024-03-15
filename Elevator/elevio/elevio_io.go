@@ -29,8 +29,7 @@ type Elevator struct {
 	Behaviour 		ElevatorBehaviour 		
 	Request 		[N_FLOORS][N_BUTTONS]bool
 	CabRequests 	[N_FLOORS]bool		
-	Config 			Config
-	Unavailable 	bool	//nødvendig?				
+	Config 			Config			
 }
 
 type Config struct {
@@ -67,8 +66,7 @@ type ElevatorBehaviour int
 const (
 	EB_Idle     ElevatorBehaviour 	= 0
 	EB_DoorOpen                   	= 1
-	EB_Moving                     	= 2
-	EB_Dead							= 3 //Elevator = 💀
+	EB_Moving                     	= 3
 )
 
 type ButtonEvent struct {
@@ -240,8 +238,6 @@ func EbToString(eb ElevatorBehaviour) string {
 		return "doorOpen"
 	case EB_Moving:
 		return "moving"
-	case EB_Dead:
-		return "dead"
 	default:
 		return "undefined"
 	}
