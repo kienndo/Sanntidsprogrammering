@@ -106,6 +106,7 @@ func CostFunction(){
     }
 	HRAOutput := *output
 	go SendAssignedOrders(HRAOutput)
+	InitMasterHallRequests()
 	
 }	
 
@@ -124,9 +125,7 @@ func UpdateHallRequests(e elevio.Elevator){
 func SendAssignedOrders(HRAOutput map[string][][2]bool){
 	ChanAssignedOrders := make(chan map[string][][2]bool)
 	
-	go bcast.Transmitter(16667, ChanAssignedOrders)
-	fmt.Println("PROBLEM")
-
+	go bcast.Transmitter(16667, ChanAssignedOrders) // Denne porten har et navn
 	go func() {
 		for {
 			HRAMutex.Lock()
@@ -138,7 +137,6 @@ func SendAssignedOrders(HRAOutput map[string][][2]bool){
 	}()
 }
 	
-
 func RecieveNewAssignedOrders(){
 	HRAMutex.Lock()
 	HRAMutex.Unlock()
@@ -149,7 +147,6 @@ func RecieveNewAssignedOrders(){
 	for{
 		select{
 		case p:= <-ChanAssignedOrdersRec:
-			fmt.Println("KOM SEG INN")
 			for IP, AssignedHallRequests := range p{
 				LocalIP, _ := localip.LocalIP()
 				if IP == fmt.Sprintf("%s:%d", LocalIP, os.Getpid()){
@@ -157,7 +154,6 @@ func RecieveNewAssignedOrders(){
 							for j:=0; j<2; j++{
 								if AssignedHallRequests[i][j] == true{
 								fsm.RunningElevator.Request[i][j]=true
-								fmt.Println("REQUEST: ", fsm.RunningElevator.Request)
 								}
 							}
 						}
@@ -167,9 +163,6 @@ func RecieveNewAssignedOrders(){
 		}
 	}
 }
-		
-	
-
 
 func MasterReceive(){
 	
@@ -194,7 +187,6 @@ func MasterReceive(){
 		case a:= <-ChanElevatorRX:
 		
 			UpdateHallRequests(a)
-			fmt.Println("MASTERHALLREQUESTS: ", MasterHallRequests)
 
 			State := HRAElevState{
 				Behavior: elevio.EbToString(a.Behaviour),
@@ -206,7 +198,6 @@ func MasterReceive(){
 			ElevatorMutex.Lock()
 			AllElevators[IPaddress] = State 
 			ElevatorMutex.Unlock()
-	
 		}
 	}
 }
@@ -235,6 +226,17 @@ func UpdateHallLights(){
 			}
 		}
 	}
+
+// Vent hvor skal jeg cleare
+func ClearAssignedOrders(){
+	for i:=0; i<elevio.N_FLOORS; i++{
+		for j:=0; j<2; j++{
+			if(fsm.RunningElevator.Request[i][j]){
+				fsm.RunningElevator.Request[i][j] = false
+			}
+		}
+	}
+}
 
 
 

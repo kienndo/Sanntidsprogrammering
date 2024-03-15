@@ -5,16 +5,11 @@ import (
 	fsm "Sanntidsprogrammering/Elevator/fsm"
 	hallassigner "Sanntidsprogrammering/Elevator/hallassigner"
 	backup "Sanntidsprogrammering/Elevator/backup"
-	localIP "Sanntidsprogrammering/Elevator/network/localip"
 	"fmt"
-	"os"
+
 )
 
 func main() {
-	MasterIPAddress, _ := localIP.LocalIP()
-	MasterID := fmt.Sprintf("%s:%d", MasterIPAddress, os.Getpid())
-	fmt.Println("DETTE ER ID", MasterID)
-
 	//Initialization
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
@@ -33,9 +28,7 @@ func main() {
 	go elevio.PollButtons(ChanButtons)
 	go elevio.PollFloorSensor(ChanFloors)
 	go elevio.PollObstructionSwitch(ChanObstr)
-	log.Println("Vi elsker Peter")
-
-
+	
 	// Timer
 	go fsm.CheckForTimeout()
 
@@ -60,7 +53,9 @@ func main() {
 			
 		case a := <-ChanObstr:
 			fmt.Printf("Obstructing: %+v\n", a)
-			fsm.ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKYag1fXxIBU6+lBG20N83iTfiAk6yJ01UMrEYenvu45 pepepopo
+			fsm.ObstructionIndicator = a
+		}
+}
 }
 
 

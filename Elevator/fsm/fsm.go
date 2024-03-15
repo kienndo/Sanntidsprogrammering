@@ -4,8 +4,8 @@ import (
 	elevio "Sanntidsprogrammering/Elevator/elevio"
 	requests "Sanntidsprogrammering/Elevator/requests"
 	timer "Sanntidsprogrammering/Elevator/timer"
+	"fmt"
 	"sync"
-
 )
 
 // Initialization
@@ -23,6 +23,10 @@ var (
 			ClearRequestVariant: elevio.CV_All,
 		},
 		CabRequests: [elevio.N_FLOORS]bool{false, false, false, false},
+		HallRequests: [elevio.N_FLOORS][2]bool{{false, false},
+												{false, false},	
+												{false, false},
+												{false, false}},
 	}
 	ObstructionIndicator bool
 	OrderMutex sync.Mutex
@@ -54,6 +58,8 @@ func FsmOnInitBetweenFloors() {
 }
 
 func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
+	OrderMutex.Lock()
+	OrderMutex.Unlock()
 	switch RunningElevator.Behaviour {
 	case elevio.EB_DoorOpen:
 		if requests.ShouldClearImmediately(RunningElevator, btn_Floor, btn_type) != 0 {
@@ -98,8 +104,12 @@ func FsmOnRequestButtonPress(btn_Floor int, btn_type elevio.ButtonType) {
 }
 
 func FsmOnFloorArrival(newFloor int) {
+	OrderMutex.Lock()
+	OrderMutex.Unlock()
 	RunningElevator.Floor = newFloor
 	elevio.SetFloorIndicator(RunningElevator.Floor)
+	fmt.Println("REQUESTS: ", RunningElevator.Request)
+	fmt.Println("HALLREQUESTS: ", RunningElevator.HallRequests)
 
 	switch RunningElevator.Behaviour {
 	case elevio.EB_Moving:
@@ -107,6 +117,7 @@ func FsmOnFloorArrival(newFloor int) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			elevio.SetDoorOpenLamp(true)
 			RunningElevator = requests.ClearAtCurrentFloor(RunningElevator)
+			fmt.Println("NEWREQUESTS: ", RunningElevator.Request)
 			timer.TimerStart(RunningElevator.Config.DoorOpenDuration)
 			SetAllLights(RunningElevator)
 			RunningElevator.Behaviour = elevio.EB_DoorOpen

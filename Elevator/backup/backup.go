@@ -32,7 +32,7 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     _, _, err = conn.ReadFrom(buffer) 
     if err != nil {
-
+        fmt.Println("Ready to start! Push a button")
         fmt.Println("Becoming primary")
         return
     }
@@ -41,7 +41,6 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
 
     timer := time.NewTimer(2*time.Second)
     go bcast.RunBroadcast(hallassigner.ChanElevatorTX, hallassigner.ElevatorTransmitPort)
-    //go hallassigner.RecieveNewAssignedOrders()
     go hallassigner.UpdateHallLights()
    
     // Run backup elevator too
@@ -50,7 +49,6 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
         case <-timer.C:
 
             SleepRandomDuration()
-            //fmt.Println("Timeout expired, becoming primary")
             ListenForPrimary(ChanButtons, ChanFloors, ChanObstr)
            
         case a := <-ChanButtons:
@@ -72,7 +70,6 @@ func ListenForPrimary(ChanButtons chan elevio.ButtonEvent, ChanFloors chan int, 
             if err != nil {
                 continue
             }
-            fmt.Println("Message received, restart timer")
             if !timer.Stop() {
                 <-timer.C
             }
@@ -93,7 +90,6 @@ func SetToPrimary() {
 
     defer conn.Close()
     
-    //go hallassigner.RecieveNewAssignedOrders()
     
     for {
         _, err := conn.Write([]byte("Primary alive"))
@@ -101,11 +97,9 @@ func SetToPrimary() {
             fmt.Println("Error sending in primary")
         }
 
-        fmt.Println("Doing primarystuff")
         go hallassigner.MasterReceive()
 
         hallassigner.UpdateHallRequests(fsm.RunningElevator)
-        fmt.Println("MASTERHALLREQUESTS: ", hallassigner.MasterHallRequests)
         MasterIPAddress, _ := localip.LocalIP()
         MasterID := fmt.Sprintf("%s:%d", MasterIPAddress, os.Getpid())
         hallassigner.AllElevators[MasterID] = hallassigner.HRAElevState{

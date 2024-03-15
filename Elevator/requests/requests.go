@@ -103,30 +103,35 @@ func IfFloorHere(e elevio.Elevator) int {
 
 func ClearAtCurrentFloor(e elevio.Elevator) elevio.Elevator {
 	FsmMutex.Lock()
-	defer FsmMutex.Unlock()
+	FsmMutex.Unlock()
 	e.Request[e.Floor][elevio.BT_Cab] = false
 
 	switch e.Dirn {
 	case elevio.MD_Up:
 		if (IfFloorAbove(e) == 0) && (!e.Request[e.Floor][elevio.BT_HallUp]) {
 			e.Request[e.Floor][elevio.BT_HallDown] = false
+			e.HallRequests[e.Floor][elevio.BT_HallDown] = false
 		}
 		e.Request[e.Floor][elevio.BT_HallUp] = false
+		e.HallRequests[e.Floor][elevio.BT_HallUp] = false
 	case elevio.MD_Down:
 		if (IfFloorBelow(e) == 0) && (!e.Request[e.Floor][elevio.BT_HallDown]) {
 			e.Request[e.Floor][elevio.BT_HallUp] = false
+			e.HallRequests[e.Floor][elevio.BT_HallUp] = false
 		}
 		e.Request[e.Floor][elevio.BT_HallDown] = false
+		e.HallRequests[e.Floor][elevio.BT_HallDown] = false
 	default:
 		e.Request[e.Floor][elevio.BT_HallUp] = false
 		e.Request[e.Floor][elevio.BT_HallDown] = false
+		e.HallRequests[e.Floor][elevio.BT_HallUp] = false
+		e.HallRequests[e.Floor][elevio.BT_HallDown] = false
 	}
 	return e
 }
 
 func ShouldStop(e elevio.Elevator) int {
 	FsmMutex.Lock()
-	defer FsmMutex.Unlock()
 	switch e.Dirn {
 	case elevio.MD_Down:
 		if e.Request[e.Floor][elevio.BT_HallDown] {

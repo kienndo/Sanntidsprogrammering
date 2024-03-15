@@ -181,7 +181,6 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 		}
 	}()
 
-	fmt.Println("Started")
 	for {
 		select {
 		case p := <-peerUpdateCh: 
@@ -192,7 +191,6 @@ func RunBroadcast(ElevatorMessageTX chan elevio.Elevator, addr int) {
 
 		case a := <-ElevatorMessageRX: 
 			fmt.Printf("Received: %#v\n", a)
-			//UpdatedElevator = a
 		}
 	}
 }
