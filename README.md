@@ -1,8 +1,8 @@
 # TTK4145 - ELEVATOR PROJECT
 ## GROUP 63:
-- Ingrid Kristine Bøe [@ingriKBo](https://github.com/IngriKBo)
-- Kien Ninh Do [@kiennd](https://github.com/kienndo)
-- Siri Helene Wahl [@sirihelenew](https://github.com/sirihelenew)
+- Ingrid Kristine Bøe 
+- Kien Ninh Do 
+- Siri Helene Wahl 
 
 ## Usage
 ### Installation
