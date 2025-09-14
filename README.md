@@ -17,55 +17,6 @@ After running the code from the first computer, which will be the *primary*, the
 The system is ready, push a button 
 ````
 
-## Missing parts and pseudo code
-We were unable to successfully implement the code that was supposed to handle disconnections. For this reason, we have included a pseudo code to maintain the code quality in the original code. The function under was supposed to work as a watchdog timer to register packet loss.
-
-    go func() {
-		for{
-			select{
-			case p:= <-ChanRecieveIP:
-				IPaddress = p.New
-				if len(p.Lost) > 0 {
-					watchdogTimer.Reset(time.Duration(5) * time.Second)
-					go func() {
-						for {
-							if reflect.DeepEqual(p.Lost, p.New) {
-								watchdogTimer.Stop()
-								fmt.Println("p.Lost has become p.New before timer expired")
-                				return
-							}
-							time.Sleep(time.Millisecond * 100)
-						}
-					}()
-					select {
-					case <-watchdogTimer.C:
-						fmt.Println("Elevator is deaddddd")
-						unavailableElevator := p.Lost[0]
-						newAllElevators := make(map[string]HRAElevState) 
-						ElevatorMutex.Lock()
-						for ID, elevator := range AllElevators {
-							if ID != unavailableElevator {
-								newAllElevators[ID]= elevator 
-							}
-						}
-						peerUpdate := peers.PeerUpdate{
-							Peers:       p.Peers,
-							New:         p.New,
-							Lost:        []string{},
-							Unavailable: []string{p.Lost[0]},
-						}
-						peerUpdateCh := peers.PeerUpdateCh
-						peerUpdateCh <- peerUpdate 
-						AllElevators = newAllElevators
-						ElevatorMutex.Unlock()
-					default:
-						// do nothing	
-					}		
-				}
-			}
-		}
-	}()
-
 ## Project Description
 **Create software for controlling `n` elevators working in parallel across `m` floors**, with the given main requirements
 1. **No calls are lost**
