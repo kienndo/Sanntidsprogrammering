@@ -1,5 +1,7 @@
 # TTK4145 - ELEVATOR PROJECT, GROUP 63
 
+This code has been implemented related to the NTNU course TTK4145 Sanntidsprogrammering
+
 ## Usage
 
 ### Install and Run
